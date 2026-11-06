@@ -1,0 +1,1804 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Huonestimulaattori 3002</title>
+<style>
+:root{--bg:#f5f6f8;--panel:#fff;--text:#1b1f24;--muted:#5f6b7a;--line:#d9dee5;--accent:#2563eb;--warn:#c2410c;--bad:#dc2626;--mid:#d97706;--ok:#15803d;--solid:#94a3b8;--por:#d6b37a}
+@media (prefers-color-scheme:dark){:root{--bg:#101318;--panel:#191e25;--text:#e6e9ee;--muted:#98a2b3;--line:#2d343e;--accent:#60a5fa;--warn:#fb923c;--bad:#f87171;--mid:#fbbf24;--ok:#4ade80;--solid:#475569;--por:#8a6d3b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:16px 20px 4px}
+h1{font-size:20px;margin:0 0 4px}
+h2{font-size:15px;margin:0 0 10px}
+h3.s{font-size:13px;margin:16px 0 8px}
+.sub{color:var(--muted);margin:0;max-width:110ch}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 20px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{background:var(--panel);padding:7px 14px;border-radius:8px 8px 0 0;font-weight:500;color:var(--muted)}
+.tabs button.on{color:var(--text);border-color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent);font-weight:600}
+.run{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-left:auto}
+.run .go{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;padding:6px 16px}
+.prog{width:160px;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .15s}
+.stat{font-size:12px;color:var(--muted);max-width:420px}
+.stat.stale{color:var(--warn)}
+main{padding:12px 20px 40px;display:grid;gap:16px;grid-template-columns:minmax(320px,470px) 1fr}
+main>[data-tab]:not(.tab-on){display:none}
+main.wide{grid-template-columns:1fr}
+@media (max-width:900px){main{grid-template-columns:1fr;padding:12px 16px 40px}.bar{padding:8px 16px}.run{margin-left:0}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.full{grid-column:1/-1}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+label{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:3px}
+input,select{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 7px;width:100%;min-width:0}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+button{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.item{border-top:1px solid var(--line);padding-top:8px;margin-top:8px}
+.itemrow{display:grid;gap:6px;align-items:end}
+.spk{grid-template-columns:1.4fr 1fr 1fr 1fr auto}
+.box1{grid-template-columns:auto 1.4fr 1.1fr .9fr auto}
+.box2{grid-template-columns:repeat(3,1fr);margin-top:6px}
+.x{padding:5px 8px}
+.hint{font-size:12px;color:var(--muted);margin:6px 0 0}
+.check{flex-direction:row;align-items:center;gap:6px;color:var(--text);font-size:13px}
+.check input{width:auto}
+canvas{width:100%;display:block}
+.views{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.views{grid-template-columns:1fr}}
+.vt{font-size:12px;color:var(--muted);margin-bottom:4px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:10px}
+.filters label{width:120px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.drop{border:2px dashed var(--line);border-radius:8px;padding:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.drop.over{border-color:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:4px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-weight:600;color:var(--muted)}
+td.l,th.l{text-align:left}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--bg)}
+.tablewrap{overflow:auto;max-height:340px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
+@media (max-width:1000px){.two{grid-template-columns:1fr}}
+.help h3{font-size:14px;margin:18px 0 6px}
+.help p,.help li,.help dd{line-height:1.55;max-width:78ch}
+.help ul,.help ol{padding-left:20px;margin:6px 0}
+.help li{margin:3px 0}
+.help dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px}
+.help dt{font-weight:600}.help dd{margin:0;color:var(--muted)}
+.helpgrid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+@media (max-width:900px){.helpgrid{grid-template-columns:1fr}.help dl{grid-template-columns:1fr}}
+.boxitem.sel{border-top-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent);padding-left:8px}
+.snapbtns{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;margin-top:6px;font-size:12px;color:var(--muted)}
+.snapbtns button{padding:2px 7px;font-size:12px}
+canvas#plan,canvas#side{touch-action:none}
+.picker{border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px}
+.phead{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-bottom:6px}
+.phead .pmax{flex-direction:row;align-items:center;gap:4px;color:var(--text)}
+.phead .pmx{width:56px;padding:2px 5px}
+.phead button{padding:2px 8px;font-size:12px}
+.plist{max-height:260px;overflow-y:auto;border-top:1px solid var(--line)}
+.prow{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:6px;align-items:center;flex-direction:row;color:var(--text);font-size:12px;padding:3px 4px;border-bottom:1px solid var(--line);cursor:pointer;border-left:3px solid var(--c)}
+.prow:hover{background:var(--bg)}.prow.on{background:var(--bg);font-weight:600}
+.prow input{width:auto;margin:0}.prow .pn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .pv{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right;min-width:40px}
+.vchk{display:inline-flex;padding:2px;border-radius:4px;box-shadow:inset 0 0 0 2px var(--c)}.vchk input{width:auto;margin:0;cursor:pointer}
+tr.rsel{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent)}
+.fitbox{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.fitparams{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:4px 14px;margin:4px 0 6px}
+.fitparams label{flex-direction:row;align-items:center;gap:6px;color:var(--text);font-size:13px}.fitparams input{width:auto}
+.fitparams .rng{color:var(--muted);font-size:11px}
+.go2{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+#fitRes table{margin-top:8px;max-width:720px}
+.maps{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.wmap{border:1px solid var(--line);border-radius:8px;padding:10px;min-width:0}
+.wmap h3{font-size:13px;margin:0 0 6px}.wmap h3 span{color:var(--muted);font-weight:400}
+.maplist{font-size:12px;margin:6px 0 0;padding:0;list-style:none;font-variant-numeric:tabular-nums}
+.maplist li{margin:3px 0}
+.tag{font-size:10px;padding:1px 5px;border-radius:4px;background:var(--por);color:#1b1f24;margin-left:4px;white-space:nowrap}
+
+.snapitem{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:12px}
+.snapitem .hd{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.snapitem .sw{width:14px;height:4px;border-radius:2px;display:inline-block}
+.snapitem .hd b{font-size:13px}.snapitem button{padding:3px 8px;font-size:12px}
+.snapitem .diff{color:var(--muted);margin-top:4px}
+.snapitem label.check{width:auto;font-size:12px}
+#snapName{width:220px}
+.disclaimer{max-width:1400px;margin:8px auto 28px;padding:14px 16px 0;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.55}
+.disclaimer p{margin:0 0 6px}
+.warnbox{border-left:3px solid var(--warn);padding:6px 10px;background:var(--bg);font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+<h1>Huonestimulaattori 3002</h1>
+<p class="sub">Matalien taajuuksien aaltosimulaatio (FDTD): huone kootaan suorakulmiosta ja laatikoista (L-muodon lovi, kalusteet), ja äänenpaine lasketaan aaltoyhtälöstä aika-askel kerrallaan. Mukana ovat moodit, heijastukset ja diffraktio ilman suorakulmio-oletusta. Koordinaatit: <b>x</b> = etäisyys vasemmasta seinästä, <b>y</b> = etäisyys etuseinästä, <b>z</b> = korkeus lattiasta.</p>
+</header>
+<div class="bar">
+  <nav class="tabs" id="tabs">
+    <button data-t="geo">Geometria</button>
+    <button data-t="resp">Vaste</button>
+    <button data-t="decay">Vaimeneminen</button>
+    <button data-t="etc">Heijastukset ja ETC</button>
+    <button data-t="walls">Seinäkartat</button>
+    <button data-t="map">Painekartta</button>
+    <button data-t="help">Ohje</button>
+  </nav>
+  <div class="run">
+    <button class="go" id="runBtn">Laske simulaatio</button>
+    <label class="check"><input type="checkbox" id="autoRun"> Automaattinen</label>
+    <div class="prog"><i id="progBar"></i></div>
+    <span class="stat" id="status">Ei laskettu.</span>
+  </div>
+</div>
+<main id="main">
+<div class="col" data-tab="geo">
+  <section class="panel">
+    <h2>Huone</h2>
+    <div class="grid3">
+      <label>Leveys W (x), m<input type="number" step="0.01" data-k="room.W"></label>
+      <label>Pituus L (y), m<input type="number" step="0.01" data-k="room.L"></label>
+      <label>Korkeus H (z), m<input type="number" step="0.01" data-k="room.H"></label>
+      <label>Lämpötila, °C<input type="number" step="0.5" data-k="temp"></label>
+      <label>Äänen nopeus<input type="text" id="cOut" readonly></label>
+      <label>Muut häviöt T60, s<input type="number" step="0.1" min="0.1" data-k="loss"></label>
+    </div>
+    <div class="vt" style="margin-top:10px">Pintojen absorptio bassolla α</div>
+    <div class="grid6">
+      <label>Etuseinä<input type="number" step="0.05" min="0" max="0.99" data-k="alpha.front"></label>
+      <label>Takaseinä<input type="number" step="0.05" min="0" max="0.99" data-k="alpha.back"></label>
+      <label>Vasen seinä<input type="number" step="0.05" min="0" max="0.99" data-k="alpha.left"></label>
+      <label>Oikea seinä<input type="number" step="0.05" min="0" max="0.99" data-k="alpha.right"></label>
+      <label>Lattia<input type="number" step="0.05" min="0" max="0.99" data-k="alpha.floor"></label>
+      <label>Katto<input type="number" step="0.05" min="0" max="0.99" data-k="alpha.ceil"></label>
+    </div>
+    <p class="hint">Tyypillisiä bassoalueen arvoja: betoni ja kivi 0,02–0,05, kipsilevyseinä 0,15–0,3, puulattia 0,1–0,15, paksu kattovaimennin 0,4–0,7. <i>Muut häviöt</i> kuvaa ilman ja muiden lähteiden vaimennusta; pidä se suurena (2–5 s), jos haluat häviöiden tulevan pinnoista.</p>
+  </section>
+  <section class="panel">
+    <h2>Kuuntelupiste</h2>
+    <div class="grid3">
+      <label>x, m<input type="number" step="0.01" data-k="lp.x"></label>
+      <label>y, m<input type="number" step="0.01" data-k="lp.y"></label>
+      <label>z, m<input type="number" step="0.01" data-k="lp.z"></label>
+      <label>Kuuntelualueen säde, m<input type="number" step="0.05" min="0" data-k="mmmR"></label>
+    </div>
+    <p class="hint">Kuuntelualueen keskiarvo lasketaan seitsemästä pisteestä: kuuntelupiste ja ± säde kunkin akselin suunnassa.</p>
+  </section>
+  <section class="panel">
+    <h2>Kaiuttimet</h2>
+    <p class="hint" style="margin-top:0">Bassoalueella sijainti = bassoelementin keskikohta (syvyyssuunnassa noin etulevyn kohdalla). Jokainen kaiutin simuloidaan erikseen, ja ne voidaan summata tuloksissa.</p>
+    <div id="spkList"></div>
+    <div class="btns"><button id="addSpk">+ Lisää kaiutin</button></div>
+  </section>
+  <section class="panel">
+    <h2>Laatikot: lovet ja kalusteet</h2>
+    <p class="hint" style="margin-top:0"><b>Kiinteä kappale</b> poistetaan ilmatilasta, ja sillä on pinta-absorptio α. Sellaisia ovat L-lovi (lattiasta kattoon nurkassa) ja kalusteet, kuten kaappi, sänky ja sohva. <b>Huokoinen vaimennin</b> (mineraalivillalevy, putkiansa, kattovaimennin) on ilmaa, jonka liikettä materiaali vaimentaa virtausvastuksen mukaan. Ääni kulkee sen läpi, ja taajuusriippuvuus, paksuuden vaikutus ja seinästä irti olevan vaimentimen tehokkuus tulevat laskennasta. Tyypillinen virtausvastus: mineraalivilla tai lasivilla 5–20, kivivillalevy 10–40, kova akustiikkalevy 20–60 kPa·s/m². Laatikot pyöristyvät laskentaruudukkoon, joten alle puolen ruudun paksuiset vaimentimet eivät tule mukaan.</p>
+    <div id="boxList"></div>
+    <div class="btns"><button id="addNotch">+ L-lovi</button><button id="addBox">+ Kaluste</button><button id="addPor">+ Huokoinen vaimennin</button></div>
+  </section>
+  <section class="panel">
+    <h2>Laskenta</h2>
+    <div class="grid3">
+      <label>Ruudukko, m<select data-k="dx"><option value="0.15">0,15 (nopea)</option><option value="0.125">0,125</option><option value="0.1">0,10 (oletus)</option><option value="0.075">0,075</option><option value="0.05">0,05 (hidas)</option></select></label>
+      <label>Kesto, s<input type="number" step="0.1" min="0.2" max="2" data-k="dur"></label>
+      <label>Luotettava yläraja<input type="text" id="fOut" readonly></label>
+    </div>
+    <p class="hint" id="gridInfo"></p>
+  </section>
+  <section class="panel">
+    <h2>Tallennus</h2>
+    <div class="btns" style="margin-top:0">
+      <button id="expJson">Vie asetukset (JSON)</button>
+      <button id="impBtn">Tuo asetukset</button><input type="file" id="impJson" accept=".json,application/json" hidden>
+      <button id="reset">Palauta oletukset</button>
+    </div>
+    <p class="hint">Asetukset tallentuvat selaimeen automaattisesti (jos selain sallii). Huonestimulaattori 3001:n asetustiedostosta tuodaan huone, pinnat, kaiuttimet ja kuuntelupiste.</p>
+  </section>
+</div>
+<div class="col" data-tab="geo">
+  <section class="panel">
+    <h2>Laskentamalli</h2>
+    <div class="filters">
+      <label class="check" style="width:auto"><input type="checkbox" id="cutAuto"> Leikkaukset kuuntelupisteen kautta</label>
+      <label class="check" style="width:auto"><input type="checkbox" id="showTri"> Kuuntelukolmio</label>
+      <label style="width:150px">Vaakaleikkauksen korkeus z, m<input type="number" step="0.05" min="0" data-k="cutZ"></label>
+      <label style="width:150px">Pystyleikkauksen kohta x, m<input type="number" step="0.05" min="0" data-k="cutX"></label>
+    </div>
+    <div class="views">
+      <div><div class="vt" id="planT">Pohjakuva</div><canvas id="plan"></canvas><div class="hint" id="triInfo" style="margin-top:6px"></div></div>
+      <div><div class="vt" id="sideT">Sivukuva</div><canvas id="side"></canvas></div>
+    </div>
+    <p class="hint"><b>Muokkaus:</b> klikkaa laatikkoa valitaksesi sen, raahaa siirtääksesi ja vedä reunasta tai kulmasta muuttaaksesi kokoa. Pohjakuvassa muutetaan leveys ja syvyys, sivukuvassa korkeus. Reunat tarttuvat seiniin ja muiden laatikoiden reunoihin, ja muuten mitat pyöristyvät 5 cm:iin. Kaiuttimia ja kuuntelupistettä voi myös raahata. Kuvat ovat leikkauksia 3D-mallista. Ruskeat ruudut ovat huokoisia vaimentimia. Harmaat ruudut ovat kiinteitä kappaleita leikkaustasossa sellaisina kuin laskenta ne näkee (ruudukkoon pyöristettyinä). Vinoviivoitettu laatikko on mukana laskennassa, mutta se ei osu tähän leikkaustasoon (esim. sänky jää korvan korkeuden alle). Katkoviiva näyttää laatikon syötetyt mitat ja pisteviiva käytöstä poistetun laatikon. Leikkausten paikan voi valita yltä; sama paikka tallennetaan simulaatiossa painekarttaa varten. Neliöt = kaiuttimet, ympyrä = kuuntelupiste, katkoviivaympyrä = kuuntelualue.</p>
+  </section>
+</div>
+
+<section class="panel full" data-tab="resp">
+  <h2>Taajuusvaste kuuntelupisteessä</h2>
+  <div class="drop" id="drop">
+    <button id="wavBtn">Tuo mittaus (WAV)</button><input type="file" id="wavIn" accept=".wav,audio/wav,audio/x-wav" hidden>
+    <span id="wavInfo" class="hint" style="margin:0">REW: File → Export → Export impulse response as WAV. Voit myös pudottaa tiedoston tähän.</span>
+  </div>
+  <div class="filters" style="margin-top:10px">
+    <label style="width:170px">Simuloitu lähde<select id="srcSel"></select></label>
+    <label style="width:100px">Kanava (WAV)<select id="wavCh"></select></label>
+    <label style="width:90px">Alku, Hz<input type="number" step="5" min="5" data-k="fMin"></label>
+    <label style="width:90px">Loppu, Hz<input type="number" step="10" data-k="fMax"></label>
+    <label style="width:110px">Aikaikkuna, ms<input type="number" step="50" min="20" data-k="win"></label>
+    <label style="width:110px">Tasoitus<select data-k="smooth"><option value="0">ei</option><option value="48">1/48 okt</option><option value="24">1/24 okt</option><option value="12">1/12 okt</option><option value="6">1/6 okt</option><option value="3">1/3 okt</option></select></label>
+    <label style="width:150px">Kaiuttimen alaraja −3 dB, Hz<input type="number" step="1" min="0" data-k="spkFc"></label>
+    <label class="check" style="width:auto"><input type="checkbox" id="useMMM"> Kuuntelualueen keskiarvo</label>
+    <label class="check" style="width:auto"><input type="checkbox" id="showAvg"> Huoneen keskiarvo</label>
+  </div>
+  <div class="two">
+    <div style="min-width:0"><canvas id="frCv"></canvas><div class="hint" id="frRead">Vie hiiri kuvaajan päälle. Klikkaus valitsee taajuuden painekarttaan ja kehittymiskuvaajaan.</div></div>
+    <div>
+      <div class="vt"><b style="color:var(--text)">Huoneen resonanssit</b> (huoneen keskiarvon huiput)</div>
+      <div class="tablewrap"><table><thead><tr><th>Taajuus (Hz)</th><th>Taso (dB)</th><th>KP (dB)</th></tr></thead><tbody id="resRows"></tbody></table></div>
+      <p class="hint">Huoneen keskiarvo = äänenpaineen keskiarvo leikkaustasojen kaikissa ilmaruuduissa. Sen huiput ovat huoneen resonansseja (moodeja) riippumatta kuuntelupisteestä. <i>KP</i> kertoo saman taajuuden tason kuuntelupisteessä suhteessa huoneen keskiarvoon: suuri negatiivinen arvo tarkoittaa, että kuuntelupiste on moodin solmukohdassa. Klikkaa riviä nähdäksesi painekartan.</p>
+      <div class="picker" id="respPick" style="margin-top:12px"></div>
+    </div>
+  </div>
+  <h3 class="s">Mitä jos -vertailu</h3>
+  <div class="fitbox">
+    <p class="hint" style="margin-top:0">Tallenna laskettu tilanne vertailukohdaksi, tee muutos (siirrä kuuntelupistettä, lisää vaimennin, siirrä kalustetta) ja laske uudelleen. Vertailukohdat piirtyvät vastekuvaajaan katkoviivoina samalla tasolla kuin nykyinen simulaatio, joten tasoerot näkyvät sellaisinaan. Vertailukohdat säilyvät, kunnes sivu ladataan uudelleen.</p>
+    <div class="btns" style="margin-top:0"><input id="snapName" placeholder="Nimi, esim. Nykytila"><button class="go2" id="snapAdd">Tallenna vertailukohdaksi</button><span class="hint" id="snapStat" style="margin:0;align-self:center"></span></div>
+    <div id="snapList"></div>
+  </div>
+  <h3 class="s">Automaattinen sovitus mittaukseen</h3>
+  <div class="fitbox">
+    <p class="hint" style="margin-top:0">Sovitus ajaa simulaation useita kertoja ja muuttaa valittuja parametreja yksi kerrallaan (koordinaattihaku). Tavoitteena on, että simuloitu vaste vastaa mitattua sovitusalueella mahdollisimman hyvin. Virhe on vasteiden erotuksen tehollisarvo 1/12-oktaavin tasoituksella; erot rajataan ±12 dB:iin, jotta yksittäiset syvät vaimentumat eivät hallitse tulosta. Sovitus vaatii mittauksen (WAV) ja käyttää yllä valittua simuloitua lähdettä.</p>
+    <div class="filters">
+      <label style="width:100px">Alue alku, Hz<input type="number" step="5" min="20" data-k="fitMin"></label>
+      <label style="width:100px">Alue loppu, Hz<input type="number" step="10" data-k="fitMax"></label>
+      <label style="width:130px">Kierroksia<select data-k="fitRounds"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+      <label class="check" style="width:auto"><input type="checkbox" id="fitFast"> Nopea esilaskenta (ruudukko 0,125 m, 0,35 s)</label>
+    </div>
+    <div class="fitparams" id="fitParams"></div>
+    <div class="btns"><button class="go2" id="fitGo">Aloita sovitus</button><button id="fitStop">Keskeytä</button><span class="hint" id="fitStat" style="margin:0;align-self:center"></span></div>
+    <div id="fitRes"></div>
+  </div>
+  <h3 class="s">Tason kehittyminen aikaikkunan funktiona</h3>
+  <div class="filters">
+    <label style="width:110px">Taajuus, Hz<input type="number" step="0.5" min="10" data-k="evoF"></label>
+    <label style="width:150px">Vertailu<select data-k="evoRef"><option value="nb">Naapuritaajuudet (±½ okt)</option><option value="abs">Pitkä ikkuna (500 ms)</option></select></label>
+  </div>
+  <canvas id="evoCv"></canvas>
+  <p class="hint" id="evoRead">Kuvaaja näyttää, kuinka valitun taajuuden taso muuttuu, kun aikaikkunaa pidennetään. Jos vaimentuma syntyy vasta pitkällä ikkunalla, sen aiheuttaa myöhemmin saapuva energia (kauempaa tulevat heijastukset ja moodikenttä). Jos se näkyy jo lyhyellä ikkunalla, syy on varhaisissa heijastuksissa. Lyhyellä ikkunalla taajuuserottelu on heikko (noin 1000 / ikkuna ms Hz), joten alle noin kolmen jakson ikkunoita kannattaa tulkita varoen.</p>
+</section>
+
+<section class="panel full" data-tab="decay">
+  <h2>Vaimeneminen</h2>
+  <h3 class="s" style="margin-top:4px">Vaimenemiskäyrät – koko taajuuskaista</h3>
+  <div class="filters">
+    <label style="width:120px">Käyrien väli, ms<input type="number" step="10" min="5" data-k="dcStep"></label>
+    <label style="width:90px">Käyriä<input type="number" step="1" min="2" max="12" data-k="dcN"></label>
+    <label style="width:100px">Ikkuna, ms<input type="number" step="50" min="20" data-k="dcWin"></label>
+    <label style="width:110px">Tasoitus<select data-k="dcSm"><option value="24">1/24 okt</option><option value="12">1/12 okt</option><option value="6">1/6 okt</option><option value="3">1/3 okt</option></select></label>
+    <label style="width:100px">Alue, dB<input type="number" step="5" min="20" data-k="dcRange"></label>
+  </div>
+  <canvas id="dcCv"></canvas>
+  <div class="hint" id="dcRead">Vie hiiri kuvaajan päälle.</div>
+  <p class="hint">Käyrät ovat taajuusvasteita, joiden aikaikkuna alkaa yhä myöhemmin: ylin käyrä alkaa suorasta äänestä, seuraava käyrien välin verran myöhemmin ja niin edelleen. Kahden käyrän väli kertoo, kuinka paljon taso putoaa siinä ajassa. Tasaisesti alas siirtyvät käyrät tarkoittavat tasaista vaimenemista; taajuus, jolla myöhäiset käyrät pysyvät korkealla, soi muita pidempään. Yläpäässä ääni vaimenee yleensä muutamassa millisekunnissa, joten sen myöhäiset käyrät painuvat heti kohinatasoon. Tasot on suhteutettu ylimmän käyrän 100 Hz–10 kHz:n mediaaniin.</p>
+  <h3 class="s">Vesiputouskuvaaja – basso</h3>
+  <div class="filters">
+    <label style="width:100px">Alku, Hz<input type="number" step="5" min="10" data-k="csdF0"></label>
+    <label style="width:100px">Loppu, Hz<input type="number" step="10" max="1000" data-k="csdF1"></label>
+    <label style="width:110px">Ikkuna, ms<input type="number" step="50" min="50" data-k="csdWin"></label>
+    <label style="width:110px">Aikaväli, ms<input type="number" step="50" min="50" data-k="csdSpan"></label>
+    <label style="width:100px">Askel, ms<input type="number" step="5" min="5" data-k="csdStep"></label>
+    <label style="width:100px">Alue, dB<input type="number" step="5" min="15" data-k="csdRange"></label>
+  </div>
+  <p class="hint" style="margin-top:0" id="csdNote">Mittaus ja WAV-kanava valitaan Vaste-välilehdellä. Vesiputouskuvaajan taajuusalue on 10–1000 Hz.</p>
+  <div class="vt" id="csdT">Mitattu</div><canvas id="csdMeas"></canvas>
+  <div class="hint" id="csdRead">Vie hiiri kuvaajan päälle. Klikkaus lisää taajuuden alla olevaan taulukkoon.</div>
+  <p class="hint">Vesiputouskuvaaja (CSD) näyttää vasteen liukuvalla aikaikkunalla: takimmainen, korostettu käyrä alkaa suorasta äänestä, ja jokainen seuraava käyrä alkaa askeleen verran myöhemmin, eli aika kulkee katsojaa kohti. Väri kertoo tason (vaalea = voimakas, tumma = heikko), joten pitkään soiva moodi näkyy vaaleana harjanteena, joka jatkuu pitkälle eteen. Taajuus- ja dB-asteikot pätevät etummaiseen käyrään; lattian viivat johtavat taajuuksia taaksepäin. Pitkään säilyvä harjanne on soiva moodi. Kuvaaja on tasattu ensimmäisen käyrän 30–200 Hz:n mediaaniin. Pitkä ikkuna erottelee taajuudet tarkemmin, lyhyt näyttää vaimenemisen tarkemmin ajassa.</p>
+  <h3 class="s">Wavelet-spektrogrammi</h3>
+  <div class="filters">
+    <label style="width:110px">Aikaväli, ms<input type="number" step="50" min="50" max="1000" data-k="wavSpan"></label>
+    <label style="width:150px">Erottelu (jaksoja)<select data-k="wavCyc"><option value="3">3 – tarkka aika</option><option value="5">5</option><option value="7">7 (oletus)</option><option value="10">10</option><option value="15">15 – tarkka taajuus</option></select></label>
+    <label style="width:100px">Alue, dB<input type="number" step="5" min="15" data-k="wavRange"></label>
+    <label class="check" style="width:auto"><input type="checkbox" id="wavNorm"> Normalisoi taajuuksittain</label>
+    <label class="check" style="width:auto"><input type="checkbox" id="wavPk"> Huippuenergian ajankohta</label>
+  </div>
+  <canvas id="wavCv"></canvas>
+  <div class="hint" id="wavRead">Vie hiiri kuvaajan päälle. Klikkaus valitsee taajuuden Vaste-välilehden tason kehittyminen -kuvaajaan.</div>
+  <p class="hint">Väri = energia ajan ja taajuuden funktiona (Morlet-wavelet). Jokainen taajuus analysoidaan muutaman jakson mittaisella ikkunalla, joten bassossa aikaerottelu on karkeampi ja ylempänä tarkempi. Katkoviivan vasemmalla puolella aikaerottelu on heikompi kuin viiva näyttää (noin jaksoja / (π · f)). Vaakasuora, pitkälle jatkuva juova on soiva moodi; tumma kohta, joka ilmestyy vasta hetken kuluttua, on vaimentuma, jonka myöhemmin saapuva energia synnyttää. Valkoinen viiva näyttää kullakin taajuudella hetken, jolloin energia on suurimmillaan; se kertoo, kuinka paljon kunkin taajuuden energia viivästyy suorasta äänestä (kaiuttimen ryhmäviive ja huone yhdessä). Viivan hyppäys myöhemmäksi kapealla taajuusalueella tarkoittaa, että energia saapuu sinne pääosin heijastuksena tai moodista eikä suorana äänenä. <i>Normalisoi taajuuksittain</i> skaalaa jokaisen taajuuden omaan huippuunsa, jolloin vaimenemisnopeudet näkyvät vertailukelpoisina myös heikoilla taajuuksilla.</p>
+  <h3 class="s">Moodikohtainen jälkikaiunta-aika</h3>
+  <div class="tablewrap" style="max-height:none"><table><thead id="t60Head"></thead><tbody id="t60Rows"></tbody></table></div>
+  <p class="hint">T60 lasketaan mittauksen resonanssihuipuille (paikalliset huiput, jotka nousevat vähintään 3 dB ympäristöään korkeammalle ±1/6 oktaavin matkalla) sekä kuvaajasta klikatuille taajuuksille. Taso mitataan 150 ms:n ikkunalla 10 ms:n välein, ja vaimenemiskäyrään sovitetaan suora välillä −3…−28 dB huipusta, kuitenkin vähintään 10 dB kohinatason yläpuolella. <i>Alue</i> kertoo, kuinka monen desibelin matkalta sovitus tehtiin; alle 15 dB:n tulos on suuntaa antava. Klikatun taajuuden huippu haetaan ±2 %:n päästä.</p>
+  <h3 class="s">Oktaavikaistat ja puheensiirtoindeksi STI</h3>
+  <div id="stiBox" class="fitbox" style="font-size:13px"></div>
+  <div class="tablewrap" style="max-height:none;margin-top:8px"><table><thead><tr><th class="l">Oktaavi (Hz)</th><th>EDT (s)</th><th>T20 (s)</th><th>T30 (s)</th><th>C50 (dB)</th><th>C80 (dB)</th><th>MTI</th><th>Dynamiikka (dB)</th></tr></thead><tbody id="octRows"></tbody></table></div>
+  <p class="hint">Impulssivaste suodatetaan oktaavikaistoihin, kaistan kohinataso arvioidaan vasteen lopusta ja vähennetään, ja vaste katkaistaan kohtaan, jossa se uppoaa kohinaan. <i>Dynamiikka</i> kertoo, kuinka monta desibeliä huipun ja kohinatason väliin jää; jos se on alle 35 dB, T30 jää pois, ja alle 25 dB:llä myös T20. STI on laskettu epäsuoralla menetelmällä impulssivasteesta (IEC 60268-16, modulaatiotaajuudet 0,63–12,5 Hz) mies- ja naispuheen painotuksilla. Naispuheen arvossa 125 Hz:n kaista ei ole mukana. <i>MTI</i> (modulaation siirtoindeksi) kertoo kaistakohtaisesti, kuinka hyvin puheen voimakkuusvaihtelut säilyvät huoneessa (1 = täysin); STI on MTI-arvojen painotettu yhdistelmä, ilman taustamelua ja kuulon peittovaikutusta, joten se kuvaa huoneen jälkikaiunnan ja heijastusten vaikutusta. C50 ja C80 = varhaisen (0–50 ms / 0–80 ms) ja myöhäisen energian suhde. Lähikenttämittauksessa suora ääni hallitsee alkua, joten EDT (sovitus 0…−10 dB) kuvaa lähinnä varhaisten heijastusten tasoa eikä jälkikaiuntaa; käytä jälkikaiunnan arviointiin T20:tä tai T30:tä.</p>
+</section>
+
+<section class="panel full" data-tab="etc">
+  <h2>Heijastukset ja ETC</h2>
+  <div class="filters">
+    <label style="width:150px">Kaiutin<select id="etcSpk"></select></label>
+    <label style="width:190px">ETC-kaista<select id="etcBand"><option value="bb">Laajakaista (vain mittaus)</option><option value="lf">Basso 40–160 Hz</option><option value="o63">Oktaavi 63 Hz</option><option value="o125">Oktaavi 125 Hz</option><option value="lf2">Alakeski 80–320 Hz</option><option value="o250">Oktaavi 250 Hz</option></select></label>
+    <label style="width:100px">Aikaväli, ms<input type="number" step="5" min="5" data-k="etcRange"></label>
+    <label style="width:100px">Alaraja, dB<input type="number" step="5" max="-10" data-k="etcFloor"></label>
+    <label style="width:120px">Nimettyjä viivoja<input type="number" step="1" min="0" data-k="etcLabels"></label>
+    <label class="check" style="width:auto"><input type="checkbox" id="etcO2"> 2. kertaluvun heijastukset</label>
+  </div>
+  <canvas id="etcCv"></canvas>
+  <div class="hint" id="etcRead">Vie hiiri kuvaajan päälle.</div>
+  <p class="hint">Yhtenäinen käyrä = mitattu ETC, katkoviiva = FDTD-simulaation ETC samalla kaistalla (0 dB = suora ääni). Pystyviivat ovat peilikuvamenetelmällä lasketut heijastukset seinistä ja laatikoiden pinnoista. Reitit, jotka kulkisivat kiinteän kappaleen läpi, on jätetty pois. Huokoisten vaimentimien kautta kulkevat reitit on merkitty (taulukossa merkintä <i>vaimentimen kautta</i>). Niiden todellinen taso on pienempi kuin kolmio näyttää, ja simuloitu ETC sisältää vaimentimien vaikutuksen. Kolmio = heijastuksen geometrinen taso bassolla (etäisyys ja pintojen bassoalueen α). Simulaatio kattaa vain bassoalueen, joten laajakaistaista ETC:tä ei voi simuloida. Kapealla ja matalalla kaistalla aikaerottelu heikkenee (näkyy kuvaajan kulmassa), ja lähekkäiset heijastukset sulautuvat yhteen.</p>
+  <h3 class="s">Heijastukset</h3>
+  <div class="two">
+    <div class="tablewrap" style="max-height:520px"><table>
+      <thead><tr><th title="Piirrä kampasuodinvaste Vaste-välilehden kuvaajaan">Vaste</th><th class="l">Heijastus</th><th>Kert.</th><th>Viive (ms)</th><th>Lisämatka (m)</th><th>Taso bassolla (dB)</th><th>1. vaimentuma (Hz)</th><th class="l">Heijastuspisteet x / y / z (m)</th></tr></thead>
+      <tbody id="reflRows"></tbody></table></div>
+    <div>
+      <div class="vt">Reitit pohjakuvassa</div><canvas id="etcPlan"></canvas>
+      <div class="vt" style="margin-top:8px">Reitit sivukuvassa</div><canvas id="etcSide"></canvas>
+      <p class="hint">Klikkaa riviä nähdäksesi heijastuksen reitin. Valitut (Vaste) reitit piirretään niiden värillä.</p>
+    </div>
+  </div>
+  <h3 class="s">Suora ja heijastunut ääni · varhainen ja myöhäinen ääni (mittauksesta)</h3>
+  <div class="filters">
+    <label style="width:230px">Näkymä<select data-k="drMode"><option value="dr">Suora vs. heijastunut ääni</option><option value="el">Varhainen vs. myöhäinen ääni</option></select></label>
+    <label style="width:150px" class="drOnly">Suoran äänen ikkuna, ms<input type="number" step="0.5" min="0.5" max="20" data-k="drT"></label>
+    <label style="width:150px" class="drOnly">Heijastuneen ikkuna, ms<input type="number" step="50" min="20" data-k="drW"></label>
+    <label style="width:150px" class="elOnly">Varhaisen raja, ms<input type="number" step="1" min="2" max="80" data-k="elT"></label>
+    <label style="width:150px" class="elOnly">Myöhäisen loppu, ms<input type="number" step="100" min="100" data-k="elW"></label>
+    <label style="width:110px">Tasoitus<select data-k="drSm"><option value="12">1/12 okt</option><option value="6">1/6 okt</option><option value="3">1/3 okt</option></select></label>
+  </div>
+  <div class="vt" id="drEtcT">Alku ETC:stä: suoran äänen ikkuna ja lasketut 1. kertaluvun heijastukset (yllä valittu kaiutin)</div>
+  <canvas id="drEtc"></canvas>
+  <canvas id="drCv" style="margin-top:10px"></canvas>
+  <div class="hint" id="drRead">Vie hiiri kuvaajan päälle.</div>
+  <canvas id="drBar" style="margin-top:10px"></canvas>
+  <p class="hint elOnly"><b>Varhainen vs. myöhäinen ääni:</b> <i>Koko</i> on koko huonevaste, <i>Varhainen</i> suoran äänen ja sitä seuraavien ensimmäisten millisekuntien (oletus 20 ms, jona aikana ääni kulkee noin 6,9 m) energia ja <i>Myöhäinen</i> kaikki sen jälkeen tuleva, kunnes jälkikaiunta on vaimentunut. Kuulo sulauttaa varhaisen äänen suoraan ääneen, joten se määrää pääosin kaiuttimen sävyn; myöhäinen ääni on huoneen jälkikaiuntaa. Kun myöhäinen taso on yli 3 dB koko tason alapuolella, jälkikaiunta tuskin hallitsee kuultua sävyä; kun se on lähellä koko tasoa, huone määrää sävyn. Bassossa (alle noin 500 Hz) näin on lähes aina, mutta hyvässä kuunteluhuoneessa varhaisen äänen pitäisi ylempänä pysyä myöhäistä voimakkaampana. Pylväät näyttävät myöhäisen ja koko tason erotuksen 1/3-oktaaveittain; katkoviiva on −3 dB:n raja. Vertailukelpoisuuden vuoksi kannattaa käyttää 1/3-oktaavin tasoitusta.</p>
+  <p class="hint drOnly">Mittauksen impulssivaste jaetaan kahteen osaan: <i>suora ääni</i> on ensimmäiset millisekunnit suoran äänen huipusta (ikkuna kannattaa lopettaa juuri ennen ensimmäistä selvää heijastusta, ks. yläkuva), ja <i>heijastunut ääni</i> on kaikki sen jälkeen tuleva valitun ikkunan pituudelta. Molempien taajuusvasteet piirretään samaan kuvaan; alempi pylväskuva näyttää niiden erotuksen eli suoran ja heijastuneen äänen suhteen (D/R) 1/3-oktaaveittain. Positiivinen arvo = suora ääni hallitsee, negatiivinen = huone hallitsee. Lyhyt ikkuna ei erottele matalia taajuuksia: noin 1,5 / ikkuna -taajuuden alapuolella (varjostettu alue) suoran äänen käyrä on vain suuntaa antava. Bassossa huone hallitsee aina kuuntelupaikalla, joten D/R on siellä luonnostaan negatiivinen.</p>
+</section>
+
+<section class="panel full" data-tab="walls">
+  <h2>Seinäkartat – vaimentimien sijoittelu</h2>
+  <div class="filters">
+    <label style="width:150px">Kaiutin<select id="wmSpk"></select></label>
+    <label style="width:150px">Pään liikevara vaaka ± m<input type="number" step="0.05" min="0" data-k="headXY"></label>
+    <label style="width:150px">Pään liikevara pysty ± m<input type="number" step="0.05" min="0" data-k="headZ"></label>
+  </div>
+  <p class="hint" style="margin-top:0">Jokaiselle pinnalle on piirretty 1. kertaluvun heijastuspiste (piste ja koordinaatit) sekä alue, johon heijastus osuu, kun kuuntelupiste liikkuu annetun liikevaran verran (katkoviivalaatikko). Vaimentimen kannattaa peittää alue ja noin 10–15 cm reunavaraa. Mukana ovat myös laatikoiden pinnat, esimerkiksi kaapin etupinta tai sängyn yläpinta. Heijastukset, joiden reitti kulkisi kappaleen läpi, on jätetty pois. Harmaa vinoviivoitus näyttää seinän osat, joita kiinni oleva kaluste peittää, ja ruskea vinoviivoitus osat, joiden edessä on huokoinen vaimennin. Merkintä <i>vaimentimen kohdalla</i> kertoo, että heijastus osuu jo vaimentimeen. Seinät on piirretty huoneesta seinää kohti katsottuna; lattia ja katto ylhäältä katsottuna, etuseinä ylhäällä.</p>
+  <div class="maps" id="wallMaps"></div>
+</section>
+
+<section class="panel full" data-tab="map">
+  <h2>Painekartta taajuuksittain</h2>
+  <div class="filters">
+    <label style="width:min(380px,100%)">Taajuus: <b id="mapFOut" style="color:var(--text)"></b><input type="range" id="mapSlider" min="0" max="1000" step="1" style="padding:0"></label>
+    <label style="width:90px">Hz<input type="number" step="0.5" id="mapFIn"></label>
+    <label style="width:170px">0 dB =<select data-k="mapRef"><option value="lp">Kuuntelupisteen taso</option><option value="med">Leikkauksen mediaani</option></select></label>
+    <label style="width:90px">Asteikko ± dB<input type="number" step="1" min="3" data-k="mapRange"></label>
+    <label class="check" style="width:auto"><input type="checkbox" id="mapBand"> 1/3-oktaavin keskiarvo</label>
+    <button data-step="-1">◀ −1 Hz</button><button data-step="1">+1 Hz ▶</button>
+  </div>
+  <div class="views">
+    <div><div class="vt" id="mapPlanT">Vaakaleikkaus (etuseinä ylhäällä)</div><canvas id="mapPlan"></canvas></div>
+    <div><div class="vt" id="mapSideT">Pystyleikkaus (etuseinä vasemmalla)</div><canvas id="mapSide"></canvas></div>
+  </div>
+  <div class="hint" id="mapRead">Vie hiiri kartan päälle.</div>
+  <p class="hint">Väri = äänenpaineen taso valitulla taajuudella simuloidulla lähteellä (sama valinta kuin Vaste-välilehdellä). Punainen on vertailutasoa voimakkaampi, sininen heikompi. Harmaat alueet ovat kiinteitä kappaleita. Kartta lasketaan koko simulaation kestolta, joten se kuvaa tasaantunutta tilaa.</p>
+</section>
+
+<section class="panel full help" data-tab="help">
+  <h2>Ohje</h2>
+  <div class="helpgrid">
+  <div>
+  <h3>Mihin Huonestimulaattori 3002 sopii</h3>
+  <p>Työkalu ratkaisee ääniaaltoyhtälön numeerisesti FDTD-menetelmällä (finite-difference time-domain) huoneen bassoalueella. Toisin kuin peilikuvamalli tai suorakulmaisen huoneen moodikaavat, se ei oleta huonetta suorakulmaiseksi. L-muodot, syvennykset ja isot kalusteet ovat mukana, samoin diffraktio niiden reunoilla. Sillä voi</p>
+  <ul>
+    <li>selvittää, miten huoneen muoto ja isot kalusteet vaikuttavat moodeihin ja bassovasteeseen</li>
+    <li>verrata simuloitua vastetta mittaukseen ja kalibroida pintojen bassoabsorptiota</li>
+    <li>katsoa painejakauman millä tahansa taajuudella ja löytää kuuntelupisteelle parempia paikkoja</li>
+    <li>tutkia, syntyykö vaimentuma varhaisista heijastuksista vai myöhemmästä moodikentästä</li>
+  </ul>
+  <p>Kaikki laskenta tapahtuu selaimessa. Mitään ei lähetetä minnekään.</p>
+  <h3>Työnkulku</h3>
+  <ol>
+    <li><b>Geometria:</b> syötä huoneen ulkomitat, pintojen bassoabsorptio, kaiuttimet ja kuuntelupiste. Lisää L-lovi ja kalusteet kiinteinä kappaleina ja vaimentimet huokoisina vaimentimina. Laatikoita voi raahata ja niiden kokoa muuttaa suoraan pohja- ja sivukuvassa, ja pikapainikkeilla laatikon saa kiinni seinään, lattiaan tai täyskorkeaksi. Tarkista laskentamallin kuvista, että kaikki on oikeissa kohdissa.</li>
+    <li><b>Laske simulaatio.</b> Jokainen kaiutin lasketaan erikseen. Oletusruudukolla (0,10 m) ja 0,5 s:n kestolla laskenta kestää yleensä 1–3 s kaiutinta kohden.</li>
+    <li><b>Vaste:</b> tuo REW:n impulssivaste WAV-tiedostona ja valitse simuloitu lähde, joka vastaa mittausta. Säädä pintojen absorptiota ja kalusteita, kunnes simulaatio muistuttaa mittausta.</li>
+    <li><b>Heijastukset ja ETC:</b> tarkista, että mitatun ETC:n heijastuspiikit osuvat laskettuihin viiveisiin. Jos ne eivät osu, korjaa ensin mitat ja paikat.</li>
+    <li><b>Automaattinen sovitus:</b> hio lopuksi epävarmat arvot, kuten pintojen α:t ja vaimentimien virtausvastus.</li>
+    <li><b>Vaimeneminen:</b> tarkastele mittauksesta, kuinka kauan mikin taajuus soi ja milloin vaimentumat syntyvät (vesiputous, wavelet, T60, STI).</li>
+    <li><b>Mitä jos:</b> tallenna tilanne vertailukohdaksi ennen muutoksia, niin näet muutoksen vaikutuksen suoraan.</li>
+    <li><b>Painekartta, resonanssit ja seinäkartat:</b> katso, millainen kenttä huoneessa on ongelmataajuuksilla, missä kuuntelupiste on sen suhteen ja mihin vaimentimet kannattaa sijoittaa.</li>
+  </ol>
+  <h3>Kuvaajien lukeminen</h3>
+  <ul>
+    <li><b>Taajuusvaste:</b> simuloitu vaste kuuntelupisteessä tai kuuntelualueen keskiarvona, käsiteltynä samalla aikaikkunalla ja tasoituksella kuin mittaus. Tasot on asetettu samaan kohtaan mediaanin (30–200 Hz) perusteella.</li>
+    <li><b>Huoneen keskiarvo</b> (katkoviiva) on paineen keskiarvo leikkaustasoilla. Sen huiput ovat huoneen resonansseja. Kun kuuntelupisteen vaste on keskiarvoa selvästi alempana, kuuntelupiste on solmukohdassa. Kun se on selvästi ylempänä, kuuntelupiste on kuvulla.</li>
+    <li><b>Kehittymiskuvaaja</b> kertoo, millä aikavälillä vaimentuma tai huippu syntyy. Vertaa mittausta ja simulaatiota: jos mittauksessa vaimentuma syntyy myöhemmin tai aiemmin kuin simulaatiossa, energiaa saapuu eri reittejä kuin mallissa.</li>
+    <li><b>Painekartta:</b> punainen = paine on suuri (kupu), sininen = paine on pieni (solmu). 1/3-oktaavin keskiarvo vastaa kuuloa paremmin kuin yksittäinen taajuus.</li>
+    <li><b>Huoneen resonanssit</b> -taulukko listaa huoneen keskiarvon huiput. <i>KP</i> kertoo saman taajuuden tason kuuntelupisteessä suhteessa huoneen keskiarvoon. Suuri negatiivinen arvo tarkoittaa, että kuuntelupiste on moodin solmukohdassa. Rivin klikkaus avaa painekartan.</li>
+    <li><b>Kuuntelukolmio</b> piirretään pohjakuvaan uloimpien kaiuttimien ja kuuntelupisteen väliin. Kuvan alla näkyvät avautumiskulma (tasasivuisessa kolmiossa 60°), kummankin kaiuttimen kulma keskilinjasta, etäisyydet ja niiden ero millisekunteina, korkeuskulma sekä kuuntelupisteen paikka huoneessa. Kulmat päivittyvät, kun kuuntelupistettä tai kaiuttimia raahataan.</li>
+    <li>Kun vertaat yhden pisteen mittaukseen, poista ruksi kohdasta <i>Kuuntelualueen keskiarvo</i>. Keskiarvo loiventaa kapeita vaimentumia.</li>
+  </ul>
+  <h3>Vaimeneminen</h3>
+  <p>Vaimeneminen-välilehti analysoi vain mittausta (Vaste-välilehdellä tuotu WAV ja valittu kanava). Taajuusvaste kertoo, <i>kuinka paljon</i> kutakin taajuutta kuuntelupisteeseen tulee; tämä välilehti kertoo, <i>milloin</i> se tulee ja <i>kuinka kauan</i> se jää soimaan. Bassossa nämä kuulee usein selvemmin kuin pienet tasoerot: soiva moodi kuulostaa jumputtavalta ja epätarkalta, vaikka taajuusvaste olisi tasattu.</p>
+  <ul>
+    <li><b>Vaimenemiskäyrät (koko taajuuskaista)</b> – mihin: nopea yleiskuva siitä, miten koko taajuusalue vaimenee. Ylin käyrä on taajuusvaste suorasta äänestä alkaen, ja seuraavat käyrät alkavat aina käyrien välin verran myöhemmin (oletus 50 ms). Taajuus, jolla myöhäiset käyrät pysyvät korkealla, soi muita pidempään; kun käyrät painuvat tasaisesti alas, huone vaimenee tasaisesti. Helpompi lukea kuin vesiputous, ja kattaa myös keski- ja yläalueen.</li>
+    <li><b>Vesiputouskuvaaja (CSD)</b> – mihin: soivien moodien tunnistaminen ja vaimentimien vaikutuksen vertailu. Vaste lasketaan liukuvalla aikaikkunalla; takimmainen, korostettu käyrä alkaa suorasta äänestä, ja aika kulkee katsojaa kohti. Pitkälle eteen jatkuva harjanne on moodi, joka soi pitkään. Ikkuna on kaikilla taajuuksilla sama, joten pitkä ikkuna erottelee taajuudet tarkasti mutta hämärtää ajoitusta. Sopii parhaiten bassoalueelle.</li>
+    <li><b>Wavelet-spektrogrammi</b> – mihin: sen näkeminen, <i>milloin</i> vaimentuma tai huippu syntyy ja mistä energia tulee. Jokainen taajuus analysoidaan muutaman jakson pituisella ikkunalla, joten sama kuva näyttää sekä moodien pitkän soimisen että varhaisten heijastusten ajoituksen. Tumma kohta, joka ilmestyy vasta hetken suoran äänen jälkeen (esim. 15–25 ms), on heijastuksen tai moodikentän aiheuttama kumoutuminen; vaimentuma, joka näkyy heti alusta, syntyy hyvin varhaisesta heijastuksesta (lattia, etuseinä). Erottelu-valinta säätää kompromissia: pieni jaksomäärä = tarkka aika, suuri = tarkka taajuus. Klikkaus vie taajuuden tason kehittyminen -kuvaajaan tarkempaa tarkastelua varten.</li>
+    <li><b>Moodikohtainen T60</b> – mihin: yksittäisen moodin soimisajan mittaaminen numerona, esimerkiksi ennen ja jälkeen basso­vaimentimen asentamisen. Lasketaan mittauksen resonanssihuipuille ja kuvaajasta klikatuille taajuuksille. Hyvin vaimennetussa pienessä huoneessa bassomoodien T60 on tyypillisesti noin 0,2–0,4 s; selvästi muita pidempi arvo kertoo ongelmamoodista.</li>
+    <li><b>Oktaavikaistat (EDT, T20, T30, C50, C80)</b> – mihin: huoneen yleinen jälkikaiunta ja tasaisuus koko taajuusalueella. Tasainen T20 kaistalta toiselle tarkoittaa tasapainoista huonetta; bassokaistojen selvästi pidempi arvo kertoo, että basso soi muuta pidempään. C50 ja C80 kertovat varhaisen ja myöhäisen energian suhteen: suuri arvo = selkeä, kuiva ääni.</li>
+    <li><b>STI</b> – mihin: yksi luku siitä, kuinka hyvin huone säilyttää äänen aikarakenteen (alun perin puheen ymmärrettävyyden mittari, IEC 60268-16). Lasketaan mies- ja naispuheen painotuksilla ilman taustamelua ja peittovaikutusta. <i>MTI</i> on sama asia oktaavikaistoittain. Pienessä, vaimennetussa kuunteluhuoneessa STI on tyypillisesti yli 0,9, joten se on hyödyllisin muutosten vertailussa eikä yksittäisenä arvona.</li>
+  </ul>
+  <h3>Mitä jos -vertailu</h3>
+  <ul>
+    <li>Tallenna laskettu tilanne vertailukohdaksi (Vaste-välilehti), tee muutos ja laske uudelleen. Enintään neljä vertailukohtaa piirtyy vastekuvaajaan samalla tasolla kuin nykyinen simulaatio.</li>
+    <li>Jokaisen vertailukohdan alla näkyy, mitä nykyisessä asetelmassa on muutettu. <i>Palauta tämä asetelma</i> palauttaa geometrian ja tulokset ilman uutta laskentaa.</li>
+    <li>Vertailukohdat ovat vain selaimen muistissa ja häviävät, kun sivu ladataan uudelleen.</li>
+  </ul>
+  <h3>Heijastukset ja ETC</h3>
+  <ul>
+    <li>Heijastukset lasketaan peilikuvamenetelmällä seinistä ja laatikoiden pinnoista (1. ja 2. kertaluku). Jokaiselle reitille tarkistetaan, osuuko heijastus todella pintaan ja kulkeeko reitti jonkin kappaleen läpi. Peittyneet reitit jätetään pois. Huokoinen vaimennin ei heijasta eikä peitä, mutta reitti, joka osuu siihen tai kulkee sen läpi, merkitään tunnisteella <i>vaimentimen kautta</i>.</li>
+    <li><i>Taso bassolla</i> lasketaan etäisyydestä ja pintojen bassoalueen absorptiosta. <i>1. vaimentuma</i> on taajuus, jolle heijastus tekee ensimmäisen interferenssivaimentuman suoran äänen kanssa.</li>
+    <li>ETC:n voi katsoa kaistoittain. Mittaus näkyy myös laajakaistaisena, simulaatio vain bassokaistoilla. Matalalla kaistalla aikaerottelu on heikko, joten ETC:n huiput ja heijastusviivat kannattaa yhdistää varoen.</li>
+    <li>Valitse heijastus (<i>Vaste</i>), niin sen kampasuodinvaste piirtyy Vaste-välilehden kuvaajaan. Saman valinnan voi tehdä vastekuvaajan vieressä olevasta listasta.</li>
+  </ul>
+  <h3>Suora ja heijastunut ääni</h3>
+  <ul>
+    <li>Heijastukset ja ETC -välilehden lopussa mittauksen impulssivaste jaetaan suoraan ääneen (ensimmäiset millisekunnit) ja sen jälkeen tulevaan heijastuneeseen ääneen. Mihin: näet, millä taajuuksilla kuulet ensisijaisesti kaiuttimen ja millä huoneen. Lähikenttäkuuntelussa suora ääni hallitsee tyypillisesti keski- ja yläalueella, ja huone bassossa.</li>
+    <li>Aseta suoran äänen ikkuna loppumaan juuri ennen ensimmäistä selvää heijastusta; yläkuvan ETC:ssä ovat näkyvissä myös geometriasta lasketut heijastusajat. Ikkuna rajoittaa erottelua: noin 1,5 / ikkuna -taajuuden alapuolella suoran äänen käyrä on epätarkka (esim. 3 ms → noin 500 Hz).</li>
+    <li><b>Varhainen vs. myöhäinen ääni</b> -näkymä jakaa vasteen ensimmäisiin 20 ms:iin suoran äänen jälkeen ja kaikkeen sen jälkeiseen. Mihin: kertoo, määrääkö kuultua sävyä kaiutin ja ensiheijastukset vai huoneen jälkikaiunta. Nyrkkisääntö: jos myöhäinen taso on yli 3 dB koko tason alapuolella, jälkikaiunta ei hallitse sävyä. Bassossa myöhäinen ääni hallitsee lähes aina; hyvässä kuunteluhuoneessa varhaisen äänen pitäisi olla myöhäistä voimakkaampi yli noin 500 Hz:n.</li>
+    <li>Pylväskuva näyttää suhteen D/R 1/3-oktaaveittain. Kun absorboit ensiheijastuksia, D/R kasvaa juuri niillä taajuuksilla, joilla vaimennin toimii, joten kuva sopii hyvin ennen–jälkeen-vertailuun.</li>
+  </ul>
+  <h3>Seinäkartat</h3>
+  <ul>
+    <li>Jokaisesta pinnasta, myös laatikoiden pinnoista, näkyy 1. kertaluvun heijastuspiste ja alue, johon heijastus osuu pään liikkuessa. Vaimentimen kannattaa peittää alue ja hieman reunavaraa. Jos heijastuspiste osuu jo piirretyn vaimentimen kohdalle, kartassa näkyy tunniste <i>vaimentimen kohdalla</i>.</li>
+    <li>Seinät on piirretty huoneesta katsottuna, lattia ja katto ylhäältä. Koordinaatit ovat samat kuin muualla: x vasemmasta seinästä, y etuseinästä, z lattiasta.</li>
+    <li>Huomaa, että 1. kertaluvun heijastusten käsittely vaikuttaa lähinnä keski- ja yläalueelle. Bassoalueen vaimentumiin tarvitaan paksumpia rakenteita.</li>
+  </ul>
+  <h3>Automaattinen sovitus</h3>
+  <ul>
+    <li>Sovitus muuttaa valittuja parametreja yksi kerrallaan ja pitää muutoksen, jos simuloitu vaste vastaa mittausta paremmin. Kierrosten välillä askelta pienennetään. Virhe on taajuusvasteiden ero desibeleinä (RMS) valitulla taajuusalueella.</li>
+    <li>Sovitus katsoo vain taajuusvastetta, ei ETC-piikkien ajoitusta. Jos se saa muuttaa mittoja tai paikkoja, se voi löytää "tehollisen" geometrian, jolla vaste osuu mutta heijastusviiveet eivät. Lukitse geometria ETC:n avulla ja sovita mieluummin α:t ja virtausvastus. Tarkista ETC aina sovituksen jälkeen.</li>
+    <li>Aseta kaiuttimen alaraja ennen sovitusta. Muuten alimman pään ero mittaukseen vääristää tulosta.</li>
+    <li>Valitse sovitettavaksi vain muutama epävarma parametri. Montaa parametria kerralla sovitettaessa tulos voi osua oikein väärästä syystä.</li>
+    <li>Nopea esilaskenta käyttää karkeampaa ruudukkoa ja lyhyempää kestoa. Kun otat sovitetut arvot käyttöön, täysi simulaatio lasketaan automaattisesti uudelleen.</li>
+    <li>Jos arvo jää hakualueen reunalle, selitys on todennäköisesti jossain muussa tekijässä kuin tässä parametrissa.</li>
+  </ul>
+  </div>
+  <div>
+  <h3>Rajoitukset</h3>
+  <ul>
+    <li><b>Taajuusalue:</b> ruudukko rajoittaa tarkkuutta. Luotettava yläraja on noin c / (12 · ruutukoko), eli 0,10 m:n ruudukolla noin 290 Hz. Menetelmän hajontavirhe laskee taajuuksia hieman, noin 1 % 100 Hz:llä 0,10 m:n ruudukolla.</li>
+    <li><b>Pinnat:</b> jokaisella pinnalla on taajuudesta riippumaton reaalinen impedanssi, joka johdetaan absorptiokertoimesta α (kohtisuora tulokulma). Kevyiden seinien taajuusriippuvaa joustavuutta ei mallinneta. Paksun vaimentimen taajuusriippuva käytös saadaan mukaan piirtämällä se huokoisena vaimentimena eikä antamalla pinnalle α-arvoa.</li>
+    <li><b>Kiinteät kappaleet</b> ovat laatikoita, joilla on taajuudesta riippumaton pinta-absorptio. Ääni ei kulje niiden läpi.</li>
+    <li><b>Huokoiset vaimentimet</b> mallinnetaan Rayleighin mallilla (virtausvastus, huokoisuus 1). Malli vastaa kuituvillojen käytöstä bassolla hyvin, ja putkitestissä absorptio vastasi teoriaa 0,01–0,03:n tarkkuudella. Kankaan, kehyksen tai ilmaraon vaikutus näkyy vain, jos ne piirretään erikseen. Alle puolen ruudun paksuiset vaimentimet eivät tule mukaan. Tyypillisiä virtausvastuksia: kevyt mineraalivilla 5–10, akustiikkalevy 10–25 ja tiivis levy 30–60 kPa·s/m².</li>
+    <li><b>Kaiutin</b> on pistemäinen tilavuuslähde, jonka vaste on tasainen. <i>Kaiuttimen alaraja</i> lisää jälkikäteen 4. kertaluvun ylipäästön. Kaiuttimen oma viive ja soiminen eivät ole mukana.</li>
+    <li><b>Sijaintien tarkkuus</b> on noin puoli ruutua. Lähde ja mikrofoni interpoloidaan ruudukkoon.</li>
+    <li>Mittaus näyttää myös mahdollisen huonekorjauksen (DSP-ekvalisoinnin) vaikutuksen, simulaatio ei.</li>
+  </ul>
+  <h3>Sanasto</h3>
+  <dl>
+    <dt>FDTD</dt><dd>Aaltoyhtälön ratkaisu differenssimenetelmällä aika-askel kerrallaan.</dd>
+    <dt>Moodi / resonanssi</dt><dd>Huoneen seisova aalto, jonka taajuus ja painejakauma riippuvat huoneen muodosta.</dd>
+    <dt>Solmu / kupu</dt><dd>Moodin paineminimi / painemaksimi.</dd>
+    <dt>Interferenssivaimentuma</dt><dd>Usean reitin kumoutumisesta syntyvä kapea vaimentuma.</dd>
+    <dt>Diffraktio</dt><dd>Aallon taipuminen esteen reunan tai nurkan ympäri. Bassolla se on voimakasta.</dd>
+    <dt>ETC</dt><dd>Energia-aikakäyrä: impulssivasteen verhokäyrä, josta heijastukset näkyvät piikkeinä viiveensä kohdalla.</dd>
+    <dt>CSD / vesiputous</dt><dd>Taajuusvasteet liukuvalla, kaikilla taajuuksilla samanpituisella aikaikkunalla; näyttää, mitkä taajuudet jäävät soimaan.</dd>
+    <dt>Wavelet-spektrogrammi</dt><dd>Aika–taajuuskartta, jossa ikkunan pituus on muutama jakso kullakin taajuudella; näyttää sekä varhaisten tapahtumien ajoituksen että moodien soimisen.</dd>
+    <dt>T60 / T20 / T30 / EDT</dt><dd>Aika, jossa ääni vaimenee 60 dB. T20 ja T30 arvioidaan välien −5…−25 dB ja −5…−35 dB kulmakertoimesta, EDT välistä 0…−10 dB.</dd>
+    <dt>STI / MTI</dt><dd>Puheensiirtoindeksi 0–1: kuinka hyvin äänen voimakkuusvaihtelut säilyvät huoneessa. MTI on sama oktaavikaistoittain.</dd>
+    <dt>Virtausvastus σ</dt><dd>Kuinka voimakkaasti huokoinen materiaali vastustaa ilman virtausta, yksikkö kPa·s/m². Bassolla paksuus vaikuttaa enemmän kuin pieni ero virtausvastuksessa.</dd>
+    <dt>Kuuntelukolmio</dt><dd>Kaiuttimien ja kuuntelupisteen muodostama kolmio. Tavallinen lähtökohta on tasasivuinen kolmio, jossa avautumiskulma on 60°.</dd>
+    <dt>Kuuntelualueen keskiarvo</dt><dd>Vaste keskiarvoistettuna kuuntelupisteen ympäriltä. Kuvaa kuultua vastetta paremmin kuin yksi piste.</dd>
+  </dl>
+  </div>
+  </div>
+</section>
+</main>
+<footer class="disclaimer">
+  <p><b>Huonestimulaattori 3002</b> on vapaasti käytettävissä, kopioitavissa ja jaettavissa. Työkalu toimitetaan sellaisenaan ilman minkäänlaista takuuta: tulokset ovat laskennallisia arvioita, jotka perustuvat yksinkertaistettuun malliin ja käyttäjän syöttämiin tietoihin, eivätkä ne korvaa mittauksia tai asiantuntijan arviota. Tarkista tulokset mittaamalla ennen kuin teet niiden perusteella hankintoja tai rakennustöitä. Tekijä ei vastaa työkalun käytöstä aiheutuvista vahingoista.</p>
+  <p>Kaikki laskenta tapahtuu omassa selaimessasi. Tuotuja mittauksia tai asetuksia ei lähetetä minnekään.</p>
+</footer>
+
+<script>
+// ================= FDTD core (also run inside a Web Worker) =================
+function fdtdRun(P, progress){
+  const {nx,ny,nz,dx,c,steps,solid,xiWall,xiBox,src,mics,sliceZ,sliceX,dec}=P;
+  const N=nx*ny*nz,S=nx*ny,O=S,L=N+2*S, C=0.999/Math.sqrt(3), dt=C*dx/c;
+  const id=(i,j,k)=>i+nx*(j+ny*k);
+  const air=new Uint8Array(N);for(let q=0;q<N;q++)air[q]=solid[q]?0:1;
+  const mx=new Float32Array(L),my=new Float32Array(L),mz=new Float32Array(L),fx=new Float32Array(L).fill(1),fy=new Float32Array(L).fill(1),fz=new Float32Array(L).fill(1);
+  const por=P.porous||null,rho=1.2;
+  const g1=new Float32Array(L),g2=new Float32Array(L);
+  for(let k=0;k<nz;k++)for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
+    const q=id(i,j,k);if(!air[q])continue;
+    let kl=0;
+    const side=(a,b,cc,s)=>{const out=a<0||b<0||cc<0||a>=nx||b>=ny||cc>=nz;
+      if(out){kl+=C/xiWall[s];return 0}const r=id(a,b,cc);if(!air[r]){kl+=C/xiBox[solid[r]-1];return 0}return 1};
+    mx[q+O]=side(i+1,j,k,1);my[q+O]=side(i,j+1,k,3);mz[q+O]=side(i,j,k+1,5);
+    side(i-1,j,k,0);side(i,j-1,k,2);side(i,j,k-1,4);
+    g1[q+O]=(1-kl/2)/(1+kl/2);g2[q+O]=C/(1+kl/2);
+  }
+  const loss=Math.exp(-6.9*dt/Math.max(P.lossT60||2,0.05));
+  for(let q=0;q<L;q++){g1[q]*=loss;g2[q]*=loss;mx[q]*=C;my[q]*=C;mz[q]*=C}
+  if(por){// face damping a = sigma*dt/(2 rho), sigma = mean of the two neighbouring cells
+    const fd=(sa,sb)=>{const sg=(sa+sb)/2;return sg*dt/(2*rho)};
+    for(let k=0;k<nz;k++)for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const q=id(i,j,k),Q=q+O,sq=por[q];
+      if(i<nx-1&&(sq||por[q+1])){const a=fd(sq,por[q+1]);fx[Q]=(1-a)/(1+a);mx[Q]/=(1+a)}
+      if(j<ny-1&&(sq||por[q+nx])){const a=fd(sq,por[q+nx]);fy[Q]=(1-a)/(1+a);my[Q]/=(1+a)}
+      if(k<nz-1&&(sq||por[q+S])){const a=fd(sq,por[q+S]);fz[Q]=(1-a)/(1+a);mz[Q]/=(1+a)}}}
+  const p=new Float32Array(L),vx=new Float32Array(L),vy=new Float32Array(L),vz=new Float32Array(L);
+  const tri=(x,y,z)=>{const fx=x/dx-0.5,fy=y/dx-0.5,fz=z/dx-0.5;
+    const i0=Math.floor(fx),j0=Math.floor(fy),k0=Math.floor(fz),ax=fx-i0,ay=fy-j0,az=fz-k0,out=[];let ws=0;
+    for(let a=0;a<2;a++)for(let b=0;b<2;b++)for(let e=0;e<2;e++){
+      const i=Math.min(nx-1,Math.max(0,i0+a)),j=Math.min(ny-1,Math.max(0,j0+b)),k=Math.min(nz-1,Math.max(0,k0+e)),q=id(i,j,k);
+      const w=(a?ax:1-ax)*(b?ay:1-ay)*(e?az:1-az);if(w>0&&air[q]){out.push([q+O,w]);ws+=w}}
+    return out.map(([q,w])=>[q,w/(ws||1)])};
+  const sw=tri(src[0],src[1],src[2]),mw=mics.map(m=>tri(m[0],m[1],m[2]));
+  const micOut=mics.map(()=>new Float32Array(steps));
+  const ns=Math.ceil(steps/dec);
+  const sZ=sliceZ>=0?new Float32Array(S*ns):null,sX=sliceX>=0?new Float32Array(ny*nz*ns):null;
+  const sig=P.sigma,t0=P.t0,prEvery=Math.max(1,Math.floor(steps/40)),e1=O,e2=O+N;
+  for(let n=0;n<steps;n++){
+    if(por){for(let q=e1;q<e2;q++){const pq=p[q];vx[q]=fx[q]*vx[q]-mx[q]*(p[q+1]-pq);vy[q]=fy[q]*vy[q]-my[q]*(p[q+nx]-pq);vz[q]=fz[q]*vz[q]-mz[q]*(p[q+S]-pq)}}
+    else{for(let q=e1;q<e2;q++){const pq=p[q];vx[q]-=mx[q]*(p[q+1]-pq);vy[q]-=my[q]*(p[q+nx]-pq);vz[q]-=mz[q]*(p[q+S]-pq)}}
+    for(let q=e1;q<e2;q++)p[q]=g1[q]*p[q]-g2[q]*(vx[q]-vx[q-1]+vy[q]-vy[q-nx]+vz[q]-vz[q-S]);
+    const t=(n+1)*dt-t0,s=-2*t/(sig*sig)*Math.exp(-(t*t)/(sig*sig))*dt;
+    for(let a=0;a<sw.length;a++)p[sw[a][0]]+=s*sw[a][1];
+    for(let m=0;m<mw.length;m++){let a=0;const W=mw[m];for(let b=0;b<W.length;b++)a+=p[W[b][0]]*W[b][1];micOut[m][n]=a}
+    if(n%dec===0){const s_=n/dec;
+      if(sZ){const off=s_*S,base=O+S*sliceZ;for(let q=0;q<S;q++)sZ[off+q]=p[base+q]}
+      if(sX){const off=s_*ny*nz;let o=0;for(let k=0;k<nz;k++)for(let j=0;j<ny;j++)sX[off+(o++)]=p[O+id(sliceX,j,k)]}}
+    if(progress&&n%prEvery===0)progress(n/steps);
+  }
+  return {micOut,sZ,sX,ns,dt};
+}
+
+// ================= state =================
+const KEY='aaltostimulaattori_v1';
+const DEF={room:{W:3.2,L:3.86,H:2.7},temp:25,loss:3,
+ alpha:{front:0.1,back:0.25,left:0.25,right:0.1,floor:0.1,ceil:0.6},
+ lp:{x:1.6,y:1.3,z:1.0},mmmR:0.15,
+ speakers:[{name:'Vasen',x:1.16,y:0.33,z:0.87},{name:'Oikea',x:2.04,y:0.33,z:0.87}],
+ boxes:[{on:false,name:'Vaatekaappi (arvio – tarkista mitat)',x0:0,x1:1.0,y0:3.26,y1:3.86,z0:0,z1:2.2,a:0.3},
+        {on:false,name:'Sänky (arvio – tarkista mitat)',x0:1.1,x1:2.7,y0:1.86,y1:3.86,z0:0,z1:0.5,a:0.4}],
+ dx:0.1,dur:0.5,auto:false,
+ src:'0',wavCh:0,fMin:20,fMax:250,win:500,smooth:24,spkFc:40,useMMM:false,showAvg:true,evoF:83,evoRef:'nb',
+ mapF:83,mapRef:'lp',mapRange:15,mapBand:false,headXY:0.2,headZ:0.1,mapSpk:'all',
+ tab:'geo',cutAuto:true,cutZ:0.4,cutX:0.5,
+ etcSpk:'0',etcBand:'lf',etcRange:30,etcFloor:-40,etcLabels:8,etcO2:true,rSel:[],
+ csdWin:300,csdSpan:400,csdStep:20,csdRange:40,csdF0:20,csdF1:250,drT:2.5,drMode:'dr',elT:20,elW:800,drW:300,drSm:6,dcStep:50,dcN:7,dcWin:300,dcSm:6,dcRange:50,wavSpan:300,wavCyc:7,wavRange:40,wavNorm:false,
+ fitMin:40,fitMax:200,fitFast:true,fitRounds:2,fitP:{spkZ:true,lpZ:true,'a.back':true,'a.left':true,'a.ceil':true}};
+const COLORS=['#2563eb','#dc2626','#16a34a','#9333ea','#ea580c','#0891b2'];
+let S=load(),RES=null,MEAS=null,running=false,worker=null,autoT=null;
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function load(){try{const t=localStorage.getItem(KEY);if(t)return Object.assign(clone(DEF),JSON.parse(t))}catch(e){}return clone(DEF)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function getP(o,p){return p.split('.').reduce((a,k)=>a==null?a:a[k],o)}
+function setP(o,p,v){const k=p.split('.');let a=o;for(let i=0;i<k.length-1;i++)a=a[k[i]];a[k[k.length-1]]=v}
+function num(v){if(v===''||v==null)return null;const n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:null}
+function f(n,d){return n==null||!isFinite(n)?'–':n.toFixed(d).replace('.',',').replace('-','−')}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function sos(T){return 331.3*Math.sqrt(1+T/273.15)}
+function xiOf(a){const r=Math.sqrt(1-Math.min(Math.max(a||0,0),0.99));return (1+r)/(1-r)}
+function dist(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])}
+function cut(){return S.cutAuto!==false?{z:S.lp.z,x:S.lp.x}:{z:+S.cutZ,x:+S.cutX}}
+function cutIdx(G,c){return{k:Math.min(G.nz-1,Math.max(0,Math.floor(c.z/G.dx))),i:Math.min(G.nx-1,Math.max(0,Math.floor(c.x/G.dx)))}}
+const SIMKEYS=()=>JSON.stringify([S.room,S.temp,S.loss,S.alpha,S.lp,S.mmmR,S.speakers.map(s=>[s.x,s.y,s.z]),S.boxes,S.dx,S.dur,cut()]);
+
+// ================= geometry =================
+function grid(st,o){st=st||S;o=o||{};
+ const dx=+(o.dx||st.dx)||0.1,r=st.room,nx=Math.max(4,Math.round(r.W/dx)),ny=Math.max(4,Math.round(r.L/dx)),nz=Math.max(4,Math.round(r.H/dx));
+ const solid=new Uint8Array(nx*ny*nz),act=[],porous=new Float32Array(nx*ny*nz),own=new Uint8Array(nx*ny*nz);let hasPor=false;
+ st.boxes.forEach((b,bi)=>{if(!b.on)return;const isP=b.type==='por';let tag=0;if(isP)hasPor=true;else{act.push(bi);tag=act.length}const sg=Math.max(0.1,+b.sig||10)*1000;
+  const i0=Math.round(Math.min(b.x0,b.x1)/dx),i1=Math.round(Math.max(b.x0,b.x1)/dx),j0=Math.round(Math.min(b.y0,b.y1)/dx),j1=Math.round(Math.max(b.y0,b.y1)/dx),k0=Math.round(Math.min(b.z0,b.z1)/dx),k1=Math.round(Math.max(b.z0,b.z1)/dx);
+  for(let k=Math.max(0,k0);k<Math.min(nz,k1);k++)for(let j=Math.max(0,j0);j<Math.min(ny,j1);j++)for(let i=Math.max(0,i0);i<Math.min(nx,i1);i++){const q=i+nx*(j+ny*k);own[q]=bi+1;if(isP){solid[q]=0;porous[q]=sg}else{solid[q]=tag;porous[q]=0}}});
+ const c=sos(st.temp),dt=0.999/Math.sqrt(3)*dx/c,steps=Math.ceil(((o.dur||st.dur)||0.5)/dt),fRel=c/(12*dx);
+ return{nx,ny,nz,dx,solid,act,porous,own,hasPor,c,dt,steps,fRel,W:nx*dx,L:ny*dx,H:nz*dx};
+}
+function isSolidAt(G,x,y,z){const i=Math.floor(x/G.dx),j=Math.floor(y/G.dx),k=Math.floor(z/G.dx);if(i<0||j<0||k<0||i>=G.nx||j>=G.ny||k>=G.nz)return true;return G.solid[i+G.nx*(j+G.ny*k)]>0}
+function micPoints(st){st=st||S;const r=Math.max(0,st.mmmR||0),p=[st.lp.x,st.lp.y,st.lp.z];
+ return [p,[p[0]-r,p[1],p[2]],[p[0]+r,p[1],p[2]],[p[0],p[1]-r,p[2]],[p[0],p[1]+r,p[2]],[p[0],p[1],p[2]-r],[p[0],p[1],p[2]+r]]}
+
+// ================= simulation driver =================
+const WORKER_SRC=fdtdRun.toString()+'\nonmessage=function(e){var P=e.data;var R=fdtdRun(P,function(x){postMessage({prog:x})});var tr=R.micOut.map(function(a){return a.buffer});if(R.sZ)tr.push(R.sZ.buffer);if(R.sX)tr.push(R.sX.buffer);postMessage({done:true,R:R},tr)};';
+function makeWorker(){try{return new Worker(URL.createObjectURL(new Blob([WORKER_SRC],{type:'text/javascript'})))}catch(e){return null}}
+function runOne(P,onProg){
+ return new Promise((res,rej)=>{
+  if(!worker)worker=makeWorker();
+  if(worker){worker.onmessage=e=>{if(e.data.prog!==undefined)onProg(e.data.prog);else if(e.data.done)res(e.data.R)};worker.onerror=err=>{worker=null;rej(err)};worker.postMessage(P)}
+  else setTimeout(()=>{try{res(fdtdRun(P,onProg))}catch(e){rej(e)}},20);
+ });
+}
+function buildP(st,G,si,o){
+ const sp=st.speakers[si],A=st.alpha,sigma=1/(Math.PI*G.c/(10*G.dx));
+ return{nx:G.nx,ny:G.ny,nz:G.nz,dx:G.dx,c:G.c,steps:G.steps,solid:G.solid,porous:G.hasPor?G.porous:null,
+  xiWall:[xiOf(A.left),xiOf(A.right),xiOf(A.front),xiOf(A.back),xiOf(A.floor),xiOf(A.ceil)],xiBox:G.act.map(bi=>xiOf(st.boxes[bi].a)),
+  src:[sp.x,sp.y,sp.z],mics:o.mics||micPoints(st),sliceZ:o.sliceZ===undefined?-1:o.sliceZ,sliceX:o.sliceX===undefined?-1:o.sliceX,dec:o.dec||4,lossT60:st.loss,sigma,t0:4*sigma};
+}
+async function runSim(){if(FITRUN){FITRUN.stop=true}
+ if(running){if(worker){worker.terminate();worker=null}running=false}
+ const G=grid(),key=SIMKEYS();
+ if(G.nx*G.ny*G.nz>2.5e6){setStatus('Ruudukko on liian suuri ('+(G.nx*G.ny*G.nz/1e6).toFixed(1)+' M ruutua). Valitse suurempi ruutukoko.',true);return}
+ running=true;const t0w=Date.now();const myRun=Symbol();runSim.cur=myRun;
+ const sigma=1/(Math.PI*G.c/(10*G.dx)),t0=4*sigma,dec=Math.max(1,Math.floor(1/(G.dt*4*G.fRel*1.3)));
+ const CUT=cut(),CI=cutIdx(G,CUT),kz=CI.k,ix=CI.i;
+ const per=[];const nS=S.speakers.length;
+ try{
+  for(let si=0;si<nS;si++){
+   const sp=S.speakers[si];
+   const P=buildP(S,G,si,{sliceZ:kz,sliceX:ix,dec});
+   const R=await runOne(P,x=>{if(runSim.cur!==myRun)return;setProg((si+x)/nS);setStatus('Lasketaan: '+esc(sp.name)+' ('+(si+1)+'/'+nS+')…')});
+   if(runSim.cur!==myRun)return;
+   per.push(R);
+  }
+ }catch(e){running=false;setStatus('Laskenta epäonnistui: '+esc(e.message||e),true);return}
+ running=false;setProg(1);
+ RES={key,G,per,sigma,t0,dec,kz,ix,cut:CUT,mics:micPoints(),cache:{}};
+ setStatus('Laskettu '+((Date.now()-t0w)/1000).toFixed(1).replace('.',',')+' s · '+G.nx+'×'+G.ny+'×'+G.nz+' ruutua · '+G.steps+' askelta');
+ drawResults();
+}
+function setProg(x){document.getElementById('progBar').style.width=(100*Math.min(1,x))+'%'}
+function setStatus(t,warn){const s=document.getElementById('status');s.innerHTML=t;s.classList.toggle('stale',!!warn)}
+function markStale(){
+ if(RES&&RES.key!==SIMKEYS())setStatus('Asetukset muuttuneet – tulokset ovat vanhentuneet. Laske uudelleen.',true);
+ if(S.auto){clearTimeout(autoT);autoT=setTimeout(()=>{if(!RES||RES.key!==SIMKEYS())runSim()},1000)}
+}
+
+// ================= DSP helpers =================
+function nextPow2(n){let p=1;while(p<n)p<<=1;return p}
+function fft(re,im,inv){
+ const n=re.length;
+ for(let i=1,j=0;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){let t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t}}
+ for(let len=2;len<=n;len<<=1){const h=len>>1,ang=(inv?2:-2)*Math.PI/len;
+  for(let j=0;j<h;j++){const wr=Math.cos(ang*j),wi=Math.sin(ang*j);
+   for(let i=j;i<n;i+=len){const a=i,b=i+h,tr=re[b]*wr-im[b]*wi,ti=re[b]*wi+im[b]*wr;re[b]=re[a]-tr;im[b]=im[a]-ti;re[a]+=tr;im[a]+=ti}}}
+ if(inv)for(let i=0;i<n;i++){re[i]/=n;im[i]/=n}
+}
+function winVal(i,pre,L,taper){let w=1;if(i<pre)w=0.5-0.5*Math.cos(Math.PI*i/pre);const fe=L-1-i;if(fe<taper)w*=0.5-0.5*Math.cos(Math.PI*fe/taper);return w}
+// windowed power spectrum with optional source deconvolution (deconv(f) -> power divisor)
+function specOf(x,ip,fs,winMs,deconv){
+ const pre=Math.min(ip,Math.round(0.005*fs)),post=Math.min(x.length-ip,Math.round(winMs/1000*fs)),L=pre+post;
+ const N=nextPow2(Math.max(L,2*fs)),re=new Float64Array(N),im=new Float64Array(N),taper=Math.max(1,Math.round(post*0.25));
+ for(let i=0;i<L;i++)re[i]=x[ip-pre+i]*winVal(i,pre,L,taper);
+ fft(re,im,false);
+ const M=N/2+1,cum=new Float64Array(M+1),df=fs/N;
+ for(let k=0;k<M;k++){let pw=re[k]*re[k]+im[k]*im[k];if(deconv)pw=k*df<3?0:pw/deconv(k*df);cum[k+1]=cum[k]+pw}
+ return{cum,df,M,fs};
+}
+function frAt(fr,sp,smooth){
+ const lo=smooth?fr*Math.pow(2,-0.5/smooth):fr,hi=smooth?fr*Math.pow(2,0.5/smooth):fr;
+ let a=Math.max(0,Math.floor(lo/sp.df)),b=Math.min(sp.M-1,Math.ceil(hi/sp.df));if(b<=a)b=a+1;
+ return 10*Math.log10((sp.cum[b+1]-sp.cum[a])/(b-a+1)+1e-40);
+}
+// power at given frequencies of a windowed segment (direct DFT)
+function dftPow(x,ip,fs,winMs,freqs,deconv){
+ const pre=Math.min(ip,Math.round(0.002*fs)),post=Math.min(x.length-ip,Math.round(winMs/1000*fs)),L=pre+post,taper=Math.max(1,Math.round(post*0.25));
+ return freqs.map(fr=>{const w=2*Math.PI*fr/fs;let re=0,im=0;
+  for(let i=0;i<L;i++){const v=x[ip-pre+i]*winVal(i,pre,L,taper);re+=v*Math.cos(w*i);im-=v*Math.sin(w*i)}
+  let p=re*re+im*im;if(deconv)p/=deconv(fr);return 10*Math.log10(p+1e-40)});
+}
+function spkHP(fr){const fc=S.spkFc||0;if(!fc)return 0;return -10*Math.log10(1+Math.pow(fc/fr,8))}
+function simDeconv(){const s=RES.sigma;return fr=>{const w=2*Math.PI*fr,G=Math.exp(-Math.pow(Math.PI*s*fr,2));return Math.pow(w*w*G,2)+1e-30}}
+function srcIdx(){if(S.src==='all')return S.speakers.map((_,i)=>i).filter(i=>RES&&RES.per[i]);const i=+S.src;return RES&&RES.per[i]?[i]:[0]}
+function simMic(m,idx){const a=RES.per[idx[0]].micOut[m],out=new Float32Array(a.length);idx.forEach(i=>{const b=RES.per[i].micOut[m];for(let n=0;n<out.length;n++)out[n]+=b[n]});return out}
+function simIp(idx){const lp=[S.lp.x,S.lp.y,S.lp.z],d=Math.min(...idx.map(i=>{const s=S.speakers[i];return dist([s.x,s.y,s.z],lp)}));return Math.round((RES.t0+d/RES.G.c)/RES.G.dt)}
+
+// ================= measurement =================
+function parseWav(buf){
+ const dv=new DataView(buf),tag=o=>String.fromCharCode(dv.getUint8(o),dv.getUint8(o+1),dv.getUint8(o+2),dv.getUint8(o+3));
+ if(dv.byteLength<12||tag(0)!=='RIFF'||tag(8)!=='WAVE')throw new Error('Tiedosto ei ole WAV (RIFF/WAVE).');
+ let o=12,fmt=null,data=null;
+ while(o+8<=dv.byteLength){const id=tag(o),sz=dv.getUint32(o+4,true),b=o+8;
+  if(id==='fmt '){let af=dv.getUint16(b,true);const ch=dv.getUint16(b+2,true),sr=dv.getUint32(b+4,true),bits=dv.getUint16(b+14,true);if(af===0xFFFE&&sz>=26)af=dv.getUint16(b+24,true);fmt={af,ch,sr,bits}}
+  else if(id==='data'){data={o:b,sz:Math.min(sz,dv.byteLength-b)};if(fmt)break}
+  o=b+sz+(sz&1)}
+ if(!fmt||!data)throw new Error('WAV-tiedostosta puuttuu fmt- tai data-osa.');
+ const bps=fmt.bits/8;if(!(fmt.af===1||fmt.af===3)||![1,2,3,4,8].includes(bps))throw new Error('Tukematon WAV-muoto.');
+ const n=Math.floor(data.sz/(bps*fmt.ch)),chans=[];for(let c=0;c<fmt.ch;c++)chans.push(new Float64Array(n));
+ for(let i=0;i<n;i++)for(let c=0;c<fmt.ch;c++){const p=data.o+(i*fmt.ch+c)*bps;let v;
+  if(fmt.af===3)v=bps===4?dv.getFloat32(p,true):dv.getFloat64(p,true);else if(bps===2)v=dv.getInt16(p,true)/32768;
+  else if(bps===3)v=(dv.getUint8(p)|(dv.getUint8(p+1)<<8)|(dv.getInt8(p+2)<<16))/8388608;else if(bps===4)v=dv.getInt32(p,true)/2147483648;else v=(dv.getUint8(p)-128)/128;
+  chans[c][i]=v}
+ return{sr:fmt.sr,chans,bits:fmt.bits,float:fmt.af===3};
+}
+function loadWav(file){
+ const info=document.getElementById('wavInfo'),rd=new FileReader();
+ rd.onload=()=>{try{const w=parseWav(rd.result);MEAS={name:file.name,sr:w.sr,chans:w.chans,cache:{}};if(S.wavCh>=w.chans.length)S.wavCh=0;
+   info.innerHTML=`<b style="color:var(--text)">${esc(file.name)}</b> · ${w.sr} Hz · ${w.bits}-bit ${w.float?'float':'PCM'} · ${w.chans.length} kan.`;update()}
+  catch(e){MEAS=null;info.innerHTML='<span style="color:var(--bad)">'+esc(e.message)+'</span>'}};
+ rd.readAsArrayBuffer(file);
+}
+function measIR(){const x=MEAS.chans[Math.min(S.wavCh||0,MEAS.chans.length-1)];
+ if(MEAS.cache.ch!==S.wavCh){let ip=0,mx=0;for(let i=0;i<x.length;i++){const a=Math.abs(x[i]);if(a>mx){mx=a;ip=i}}MEAS.cache={ch:S.wavCh,ip}}
+ return{x,ip:MEAS.cache.ip,fs:MEAS.sr}}
+
+// ================= UI binding =================
+function bindStatic(){
+ document.querySelectorAll('[data-k]').forEach(el=>{
+  const k=el.dataset.k,v=getP(S,k);el.value=v==null?'':v;if(el.dataset.b)return;el.dataset.b='1';
+  el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{const n=num(el.value);if(n===null&&el.tagName!=='SELECT')return;setP(S,k,n===null?el.value:n);update()});
+ });
+ const cb=(id,k)=>{const el=document.getElementById(id);el.checked=!!S[k];el.onchange=()=>{S[k]=el.checked;update()}};
+ cb('autoRun','auto');{const el=document.getElementById('showTri');el.checked=S.showTri!==false;el.onchange=()=>{S.showTri=el.checked;update()}}{const el=document.getElementById('cutAuto');el.checked=S.cutAuto!==false;el.onchange=()=>{S.cutAuto=el.checked;if(!S.cutAuto){S.cutZ=S.lp.z;S.cutX=S.lp.x}update()}}cb('useMMM','useMMM');cb('showAvg','showAvg');cb('mapBand','mapBand');cb('wavNorm','wavNorm');{const el=document.getElementById('wavPk');el.checked=S.wavPk!==false;el.onchange=()=>{S.wavPk=el.checked;update()}}
+}
+function renderSpk(){
+ const box=document.getElementById('spkList');
+ box.innerHTML=S.speakers.map((sp,i)=>`<div class="item"><div class="itemrow spk">
+  <label><span><span class="dot" style="background:${COLORS[i%COLORS.length]}"></span>Nimi</span><input data-i="${i}" data-f="name" value="${esc(sp.name)}"></label>
+  <label>x, m<input type="number" step="0.01" data-i="${i}" data-f="x" value="${sp.x}"></label>
+  <label>y, m<input type="number" step="0.01" data-i="${i}" data-f="y" value="${sp.y}"></label>
+  <label>z, m<input type="number" step="0.01" data-i="${i}" data-f="z" value="${sp.z}"></label>
+  <button class="x" data-del="${i}" title="Poista">✕</button></div></div>`).join('');
+ box.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>{const sp=S.speakers[+el.dataset.i],k=el.dataset.f;
+  if(k==='name')sp.name=el.value;else{const n=num(el.value);if(n===null)return;sp[k]=n}renderSrcSel();update()}));
+ box.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(S.speakers.length<2)return;S.speakers.splice(+b.dataset.del,1);RES=null;renderSpk();renderSrcSel();update()});
+}
+function nb(b){return{x0:Math.min(b.x0,b.x1),x1:Math.max(b.x0,b.x1),y0:Math.min(b.y0,b.y1),y1:Math.max(b.y0,b.y1),z0:Math.min(b.z0,b.z1),z1:Math.max(b.z0,b.z1)}}
+function r2(v){return Math.round(v*100)/100}
+let SEL=-1;
+function renderBoxes(){
+ const box=document.getElementById('boxList'),R=S.room;
+ box.innerHTML=S.boxes.map((b,i)=>{const n=nb(b);return`<div class="item boxitem${i===SEL?' sel':''}" data-bi="${i}"><div class="itemrow box1">
+  <label class="check" title="Käytössä"><input type="checkbox" data-i="${i}" data-f="on"${b.on?' checked':''}></label>
+  <label>Nimi<input data-i="${i}" data-f="name" value="${esc(b.name)}"></label>
+  <label>Tyyppi<select data-i="${i}" data-f="type"><option value="solid"${b.type!=='por'?' selected':''}>Kiinteä kappale</option><option value="por"${b.type==='por'?' selected':''}>Huokoinen vaimennin</option></select></label>
+  ${b.type==='por'?`<label title="Virtausvastus: mineraalivilla 5–20, kivivillalevy 10–40, kova akustiikkalevy 20–60 kPa·s/m²">Virtausvastus kPa·s/m²<input type="number" step="1" min="0.5" data-i="${i}" data-f="sig" value="${b.sig||10}"></label>`:`<label>α (pinta)<input type="number" step="0.05" min="0" max="0.99" data-i="${i}" data-f="a" value="${b.a}"></label>`}
+  <button class="x" data-del="${i}" title="Poista">✕</button></div>
+  <div class="itemrow box2">
+   <label>Vasemmasta seinästä<input type="number" step="0.05" min="0" data-i="${i}" data-f="px" value="${r2(n.x0)}"></label>
+   <label>Etuseinästä<input type="number" step="0.05" min="0" data-i="${i}" data-f="py" value="${r2(n.y0)}"></label>
+   <label>Lattiasta<input type="number" step="0.05" min="0" data-i="${i}" data-f="pz" value="${r2(n.z0)}"></label>
+   <label>Leveys (x)<input type="number" step="0.05" min="0.05" data-i="${i}" data-f="sx" value="${r2(n.x1-n.x0)}"></label>
+   <label>Syvyys (y)<input type="number" step="0.05" min="0.05" data-i="${i}" data-f="sy" value="${r2(n.y1-n.y0)}"></label>
+   <label>Korkeus (z)<input type="number" step="0.05" min="0.05" data-i="${i}" data-f="sz" value="${r2(n.z1-n.z0)}"></label>
+  </div>
+  <div class="snapbtns" data-i="${i}">Kiinni: <button data-snap="L">⇤ vasen seinä</button><button data-snap="R">oikea seinä ⇥</button><button data-snap="F">⇡ etuseinä</button><button data-snap="B">takaseinä ⇣</button><button data-snap="Z">lattia</button><button data-snap="FH">lattiasta kattoon</button>
+   <span class="hint" style="margin:0" data-free>Vapaa tila: ${f(n.x0,2)} / ${f(R.W-n.x1,2)} m (vasen/oikea) · ${f(n.y0,2)} / ${f(R.L-n.y1,2)} m (etu/taka) · ${f(R.H-n.z1,2)} m kattoon</span></div><div class="hint boxcnt" data-cnt="${i}"></div></div>`}).join('')
+  ||'<p class="hint">Ei laatikoita: huone on suorakulmainen.</p>';
+ boxCounts();
+ box.querySelectorAll('input,select').forEach(el=>el.addEventListener(el.type==='checkbox'||el.tagName==='SELECT'?'change':'input',()=>{const i=+el.dataset.i,b=S.boxes[i],k=el.dataset.f;
+  if(k==='on')b.on=el.checked;else if(k==='name')b.name=el.value;else if(k==='type'){b.type=el.value;if(b.type==='por'&&!b.sig)b.sig=10;SEL=i;renderBoxes();update();return}else{const v=num(el.value);if(v===null)return;const n=nb(b);
+   if(k==='a')b.a=v;else if(k==='sig')b.sig=v;
+   else if(k==='px'){b.x0=v;b.x1=v+(n.x1-n.x0)}else if(k==='py'){b.y0=v;b.y1=v+(n.y1-n.y0)}else if(k==='pz'){b.z0=v;b.z1=v+(n.z1-n.z0)}
+   else if(k==='sx'){if(v<=0)return;b.x0=n.x0;b.x1=n.x0+v}else if(k==='sy'){if(v<=0)return;b.y0=n.y0;b.y1=n.y0+v}else if(k==='sz'){if(v<=0)return;b.z0=n.z0;b.z1=n.z0+v}}
+  SEL=i;update();refreshBoxNotes()}));
+ box.querySelectorAll('[data-del]').forEach(b=>b.onclick=e=>{e.stopPropagation();S.boxes.splice(+b.dataset.del,1);SEL=-1;renderBoxes();update()});
+ box.querySelectorAll('[data-snap]').forEach(bt=>bt.onclick=e=>{e.stopPropagation();const i=+bt.parentElement.dataset.i,b=S.boxes[i],n=nb(b),R=S.room,w=n.x1-n.x0,d=n.y1-n.y0,h=n.z1-n.z0,t=bt.dataset.snap;
+  if(t==='L'){b.x0=0;b.x1=w}else if(t==='R'){b.x0=r2(R.W-w);b.x1=R.W}else if(t==='F'){b.y0=0;b.y1=d}else if(t==='B'){b.y0=r2(R.L-d);b.y1=R.L}else if(t==='Z'){b.z0=0;b.z1=h}else if(t==='FH'){b.z0=0;b.z1=R.H}
+  SEL=i;renderBoxes();update()});
+ box.querySelectorAll('.boxitem').forEach(el=>el.addEventListener('click',()=>{const i=+el.dataset.bi;if(SEL!==i){SEL=i;box.querySelectorAll('.boxitem').forEach(x=>x.classList.toggle('sel',+x.dataset.bi===SEL));drawGeo(grid(),[])}}));
+}
+// update only the derived numbers of the box list (keeps focus while typing / dragging)
+function boxCounts(){
+ const G=grid(),cnt=new Array(S.boxes.length).fill(0);for(let q=0;q<G.own.length;q++){const t=G.own[q];if(t)cnt[t-1]++}
+ const cv=G.dx*G.dx*G.dx;
+ document.querySelectorAll('#boxList [data-cnt]').forEach(el=>{const i=+el.dataset.cnt,b=S.boxes[i];if(!b)return;const n=nb(b),v0=(n.x1-n.x0)*(n.y1-n.y0)*(n.z1-n.z0);
+  el.innerHTML=b.on?(cnt[i]?`Laskennassa mukana: ${cnt[i]} ruutua ≈ ${f(cnt[i]*cv,2)} m³ (syötetty ${f(v0,2)} m³)`:'<span style="color:var(--warn)">Laatikko on pienempi kuin laskentaruutu tai huoneen ulkopuolella, joten se ei vaikuta laskentaan.</span>'):'Pois käytöstä – ei mukana laskennassa.'});
+}
+function refreshBoxNotes(){
+ const R=S.room;document.querySelectorAll('#boxList .boxitem').forEach(el=>{const i=+el.dataset.bi,b=S.boxes[i];if(!b)return;const n=nb(b);
+  const set=(k,v)=>{const inp=el.querySelector('[data-f="'+k+'"]');if(inp&&document.activeElement!==inp)inp.value=r2(v)};
+  set('px',n.x0);set('py',n.y0);set('pz',n.z0);set('sx',n.x1-n.x0);set('sy',n.y1-n.y0);set('sz',n.z1-n.z0);
+  const sp=el.querySelector('[data-free]');if(sp)sp.textContent=`Vapaa tila: ${f(n.x0,2)} / ${f(R.W-n.x1,2)} m (vasen/oikea) · ${f(n.y0,2)} / ${f(R.L-n.y1,2)} m (etu/taka) · ${f(R.H-n.z1,2)} m kattoon`;
+  el.classList.toggle('sel',i===SEL)});
+ boxCounts();
+}
+function renderSrcSel(){
+ const el=document.getElementById('srcSel');
+ const o=S.speakers.map((s,i)=>`<option value="${i}">${esc(s.name)}</option>`).join('')+(S.speakers.length>1?'<option value="all">Kaikki yhdessä</option>':'');
+ if(el.dataset.o!==o){el.innerHTML=o;el.dataset.o=o}
+ if(S.src!=='all'&&+S.src>=S.speakers.length)S.src='0';el.value=S.src;
+ el.onchange=()=>{S.src=el.value;update()};
+ const wc=document.getElementById('wavCh'),n=MEAS?MEAS.chans.length:1;
+ const co=Array.from({length:n},(_,i)=>`<option value="${i}">${n===1?'mono':String(i+1)}</option>`).join('');
+ if(wc.dataset.o!==co){wc.innerHTML=co;wc.dataset.o=co}wc.value=String(Math.min(S.wavCh||0,n-1));
+ wc.onchange=()=>{S.wavCh=+wc.value;update()};
+}
+function update(){
+ save();
+ const G=grid();
+ document.getElementById('cOut').value=f(G.c,1)+' m/s';
+ document.getElementById('fOut').value='≈ '+f(G.fRel,0)+' Hz';
+ const nCells=G.nx*G.ny*G.nz,estS=nCells*G.steps/6e7*S.speakers.length;
+ document.getElementById('gridInfo').innerHTML=`${G.nx} × ${G.ny} × ${G.nz} = ${(nCells/1000).toFixed(1).replace('.',',')} k ruutua · ${G.steps} aika-askelta · arvioitu laskenta-aika noin ${f(Math.max(0.5,estS),1)} s (${S.speakers.length} kaiutinta)${Math.abs(G.W-S.room.W)>1e-6||Math.abs(G.L-S.room.L)>1e-6||Math.abs(G.H-S.room.H)>1e-6?`<br>Huoneen mitat pyöristyvät ruudukkoon: ${f(G.W,2)} × ${f(G.L,2)} × ${f(G.H,2)} m.`:''}`;
+ const warn=[];
+ S.speakers.forEach(s=>{if(isSolidAt(G,s.x,s.y,s.z))warn.push(esc(s.name)+' on kiinteän kappaleen sisällä tai huoneen ulkopuolella.')});
+ if(isSolidAt(G,S.lp.x,S.lp.y,S.lp.z))warn.push('Kuuntelupiste on kiinteän kappaleen sisällä tai huoneen ulkopuolella.');
+ drawGeo(G,warn);
+ renderSrcSel();
+ markStale();
+ drawResults();
+}
+
+// ================= drawing: geometry =================
+function setupCanvas(cv,h){const cw=Math.max(cv.clientWidth,260),dpr=window.devicePixelRatio||1;cv.style.height=h+'px';cv.width=cw*dpr;cv.height=h*dpr;const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,cw,h);return{g,cw}}
+function drawGeo(G,warn){
+ const c=cut(),CI=cutIdx(G,c);
+ sliceDraw('plan',G,'plan',CI.k,null,c.z);sliceDraw('side',G,'side',CI.i,null,c.x);
+ document.getElementById('planT').textContent='Pohjakuva: vaakaleikkaus korkeudella z = '+f(c.z,2)+' m'+(S.cutAuto!==false?' (kuuntelupiste)':'');
+ document.getElementById('sideT').textContent='Sivukuva: pystyleikkaus kohdassa x = '+f(c.x,2)+' m'+(S.cutAuto!==false?' (kuuntelupiste)':'')+', etuseinä vasemmalla';
+ const dis=S.cutAuto!==false;['cutZ','cutX'].forEach(k=>{const el=document.querySelector('[data-k="'+k+'"]');if(el){el.disabled=dis;if(dis)el.value=k==='cutZ'?S.lp.z:S.lp.x}});
+ const pv=document.getElementById('plan').parentElement.parentElement.parentElement;
+ let wb=pv.querySelector('.warnbox');if(warn.length){if(!wb){wb=document.createElement('div');wb.className='warnbox';pv.appendChild(wb)}wb.innerHTML='⚠ '+warn.join('<br>⚠ ')}else if(wb)wb.remove();
+}
+// generic slice renderer (geometry or heatmap): mode 'plan' (x-y at k) or 'side' (y-z at i)
+function sliceDraw(cvId,G,mode,idx,field,pos){
+ const cv=document.getElementById(cvId),pad=24;
+ const R0=S.room,U=mode==='plan'?R0.W:R0.L,V=mode==='plan'?R0.L:R0.H,nu=mode==='plan'?G.nx:G.ny,nv=mode==='plan'?G.ny:G.nz;
+ const cw0=Math.max(cv.clientWidth,260),sc=Math.max(1,Math.min((cw0-2*pad)/U,(mode==='plan'?520:360-2*pad)/V)),h=V*sc+2*pad;
+ const{g,cw}=setupCanvas(cv,h),ox=(cw-U*sc)/2,X=u=>ox+u*sc,Y=v=>mode==='plan'?pad+v*sc:pad+(V-v)*sc;
+ const text=css('--text'),muted=css('--muted'),solidC=css('--solid');
+ const cell=(a,b)=>mode==='plan'?a+G.nx*(b+G.ny*idx):idx+G.nx*(a+G.ny*b);
+ if(field){
+  const off=document.createElement('canvas');off.width=nu;off.height=nv;const og=off.getContext('2d'),im=og.createImageData(nu,nv);
+  for(let b=0;b<nv;b++)for(let a=0;a<nu;a++){const q=(mode==='plan'?b:nv-1-b)*nu+a,o=q*4,val=field.v[b*nu+a];
+   if(val===null||!isFinite(val)){im.data[o+3]=0;continue}
+   const col=hmColor((val-field.ref)/field.rng);im.data[o]=col[0];im.data[o+1]=col[1];im.data[o+2]=col[2];im.data[o+3]=255}
+  og.putImageData(im,0,0);g.imageSmoothingEnabled=true;g.save();g.beginPath();g.rect(X(0),pad,U*sc,V*sc);g.clip();
+  g.drawImage(off,X(0),mode==='plan'?pad:Y(nv*G.dx),nu*G.dx*sc,nv*G.dx*sc);g.restore();
+ }
+ // solids (clipped to the true room outline)
+ g.save();g.beginPath();g.rect(X(0),pad,U*sc,V*sc);g.clip();g.fillStyle=solidC;
+ for(let b=0;b<nv;b++)for(let a=0;a<nu;a++)if(G.solid[cell(a,b)]){const x=X(a*G.dx),y=mode==='plan'?Y(b*G.dx):Y((b+1)*G.dx);g.fillRect(x,y,G.dx*sc+0.6,G.dx*sc+0.6)}
+ if(G.hasPor){g.fillStyle=css('--por');g.globalAlpha=field?.35:.7;for(let b=0;b<nv;b++)for(let a=0;a<nu;a++)if(G.porous[cell(a,b)]>0){const x=X(a*G.dx),y=mode==='plan'?Y(b*G.dx):Y((b+1)*G.dx);g.fillRect(x,y,G.dx*sc+0.6,G.dx*sc+0.6)}g.globalAlpha=1}
+ g.restore();
+ // box outlines (entered dims)
+ const uv=b=>{const n=nb(b);return mode==='plan'?[n.x0,n.x1,n.y0,n.y1]:[n.y0,n.y1,n.z0,n.z1]};
+ const rectOf=b=>{const[u0,u1,v0,v1]=uv(b);return mode==='plan'?[X(u0),Y(v0),(u1-u0)*sc,(v1-v0)*sc]:[X(u0),Y(v1),(u1-u0)*sc,(v1-v0)*sc]};
+ S.boxes.forEach((b,bi)=>{const n=nb(b),lp=[S.lp.x,S.lp.y,S.lp.z];
+  const inCut=mode==='plan'?(pos>=n.z0&&pos<=n.z1):(pos>=n.x0&&pos<=n.x1);
+  if(field&&(!b.on||!inCut))return;
+  const r=rectOf(b);
+  if(!field&&b.on&&!inCut){g.save();g.beginPath();g.rect(r[0],r[1],r[2],r[3]);g.clip();g.strokeStyle=solidC;g.globalAlpha=.55;g.lineWidth=1;g.beginPath();
+   for(let t=-r[3];t<r[2];t+=7){g.moveTo(r[0]+t,r[1]+r[3]);g.lineTo(r[0]+t+r[3],r[1])}g.stroke();g.restore()}g.lineWidth=1;g.strokeStyle=muted;g.setLineDash(b.on?[4,3]:[1,3]);g.globalAlpha=b.on?1:.6;g.strokeRect(r[0],r[1],r[2],r[3]);g.globalAlpha=1;g.setLineDash([]);
+  if(!field&&r[2]>40&&r[3]>14&&bi!==SEL){g.fillStyle=muted;g.font='10px system-ui,sans-serif';g.textAlign='left';g.fillText(b.name.length>22?b.name.slice(0,21)+'…':b.name,r[0]+4,r[1]+12)}});
+ if(!field&&SEL>=0&&S.boxes[SEL]){const b=S.boxes[SEL],[u0,u1,v0,v1]=uv(b),r=rectOf(b),acc=css('--accent');
+  g.strokeStyle=acc;g.lineWidth=2;g.strokeRect(r[0],r[1],r[2],r[3]);
+  g.fillStyle=acc;[[r[0],r[1]],[r[0]+r[2],r[1]],[r[0],r[1]+r[3]],[r[0]+r[2],r[1]+r[3]],[r[0]+r[2]/2,r[1]],[r[0]+r[2]/2,r[1]+r[3]],[r[0],r[1]+r[3]/2],[r[0]+r[2],r[1]+r[3]/2]].forEach(([x,y])=>g.fillRect(x-3,y-3,6,6));
+  const lab=(t,x,y)=>{g.font='600 11px system-ui,sans-serif';const tw=g.measureText(t).width;g.fillStyle=css('--panel');g.globalAlpha=.9;g.fillRect(x-tw/2-3,y-9,tw+6,13);g.globalAlpha=1;g.fillStyle=acc;g.textAlign='center';g.fillText(t,x,y+1)};
+  lab(mode==='plan'?`${f(u1-u0,2)} × ${f(v1-v0,2)} m`:`korkeus ${f(v1-v0,2)} m`,r[0]+r[2]/2,r[1]+r[3]/2+4);
+  const dim=(x1,y1,x2,y2,t)=>{g.strokeStyle=acc;g.lineWidth=1;g.setLineDash([]);g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();
+   [[x1,y1],[x2,y2]].forEach(([x,y])=>{g.beginPath();if(x1===x2){g.moveTo(x-4,y);g.lineTo(x+4,y)}else{g.moveTo(x,y-4);g.lineTo(x,y+4)}g.stroke()});lab(t,(x1+x2)/2,(y1+y2)/2+4)};
+  const gl=u0,gr=U-u1,gb=v0,gt=V-v1,mu=(u0+u1)/2,mv=(v0+v1)/2;
+  if(Math.min(gl,gr)>0.01){if(gl<=gr)dim(X(0),mode==='plan'?Y(mv):Y(mv),X(u0),Y(mv),f(gl,2));else dim(X(u1),Y(mv),X(U),Y(mv),f(gr,2))}
+  if(Math.min(gb,gt)>0.01){if(gb<=gt)dim(X(mu),Y(0),X(mu),Y(v0),f(gb,2));else dim(X(mu),Y(v1),X(mu),Y(V),f(gt,2))}
+ }
+ g.strokeStyle=text;g.lineWidth=1.5;g.strokeRect(X(0),pad,U*sc,V*sc);
+ g.fillStyle=muted;g.font='11px system-ui,sans-serif';g.textAlign='center';
+ if(mode==='plan'){g.fillText('Etuseinä',X(U/2),pad-8);g.fillText('Takaseinä',X(U/2),pad+V*sc+16);
+  g.save();g.translate(X(0)-10,pad+V*sc/2);g.rotate(-Math.PI/2);g.fillText('Vasen',0,0);g.restore();g.save();g.translate(X(U)+14,pad+V*sc/2);g.rotate(-Math.PI/2);g.fillText('Oikea',0,0);g.restore()}
+ else{g.fillText('Katto',X(U/2),pad-8);g.fillText('Lattia',X(U/2),pad+V*sc+16);
+  g.save();g.translate(X(0)-10,pad+V*sc/2);g.rotate(-Math.PI/2);g.fillText('Etuseinä',0,0);g.restore();g.save();g.translate(X(U)+14,pad+V*sc/2);g.rotate(-Math.PI/2);g.fillText('Takaseinä',0,0);g.restore()}
+ const P=p=>mode==='plan'?[X(p[0]),Y(p[1])]:[X(p[1]),Y(p[2])];
+ if(mode==='plan'&&!field)drawTriangle(g,X,Y,text,muted);
+ const placed=[];
+ S.speakers.forEach((sp,i)=>{const q=P([sp.x,sp.y,sp.z]);g.fillStyle=COLORS[i%COLORS.length];g.fillRect(q[0]-6,q[1]-6,12,12);g.strokeStyle='#fff';g.lineWidth=1.5;g.strokeRect(q[0]-6,q[1]-6,12,12);
+  const n=placed.filter(o=>Math.abs(o[0]-q[0])<40&&Math.abs(o[1]-q[1])<10).length;placed.push(q);
+  g.font='600 11px system-ui,sans-serif';g.textAlign='left';const tw=g.measureText(sp.name).width;g.fillStyle='rgba(0,0,0,.55)';g.fillRect(q[0]+8,q[1]-17-n*14,tw+6,14);g.fillStyle='#fff';g.fillText(sp.name,q[0]+11,q[1]-6-n*14)});
+ const m=P([S.lp.x,S.lp.y,S.lp.z]);
+ if(S.mmmR>0){g.strokeStyle=field?'#000':text;g.setLineDash([3,3]);g.lineWidth=1;g.beginPath();g.arc(m[0],m[1],S.mmmR*sc,0,7);g.stroke();g.setLineDash([])}
+ g.fillStyle='#fff';g.beginPath();g.arc(m[0],m[1],7,0,7);g.fill();g.strokeStyle='#000';g.lineWidth=2;g.stroke();g.fillStyle='#000';g.beginPath();g.arc(m[0],m[1],2.2,0,7);g.fill();
+ cv._map={ox,pad,sc,U,V,mode,nu,nv};
+}
+// listening triangle: outermost two speakers (by x) and the listening point
+function triGeom(){
+ if(S.speakers.length<2)return null;
+ const sp=S.speakers.map((s,i)=>({s,i})).sort((a,b)=>a.s.x-b.s.x),A=sp[0],B=sp[sp.length-1],L=S.lp;
+ const d=(p,q)=>Math.hypot(p.x-q.x,p.y-q.y),dA=d(A.s,L),dB=d(B.s,L),w=d(A.s,B.s);
+ // horizontal angles from the listener's forward axis (toward front wall = −y); left = negative
+ const ang=s=>Math.atan2(s.x-L.x,L.y-s.y)*180/Math.PI,aA=ang(A.s),aB=ang(B.s);
+ const el=s=>Math.atan2(s.z-L.z,Math.hypot(s.x-L.x,s.y-L.y))*180/Math.PI;
+ return{A,B,dA,dB,w,aA,aB,open:aB-aA,elA:el(A.s),elB:el(B.s),dt:(dA-dB)/sos(S.temp)*1000}
+}
+function drawTriangle(g,X,Y,text,muted){
+ const box=document.getElementById('triInfo');
+ if(S.showTri===false){if(box)box.innerHTML='';return}
+ const T=triGeom();if(!T){if(box)box.innerHTML='';return}
+ const L=S.lp,a=T.A.s,b=T.B.s,acc=css('--accent');
+ g.save();g.strokeStyle=acc;g.globalAlpha=.85;g.lineWidth=1.2;g.setLineDash([6,4]);
+ g.beginPath();g.moveTo(X(a.x),Y(a.y));g.lineTo(X(L.x),Y(L.y));g.lineTo(X(b.x),Y(b.y));g.lineTo(X(a.x),Y(a.y));g.stroke();
+ // centre line (listener forward axis)
+ g.setLineDash([2,4]);g.globalAlpha=.6;g.beginPath();g.moveTo(X(L.x),Y(L.y));g.lineTo(X(L.x),Y(0));g.stroke();g.setLineDash([]);
+ // angle arcs at the listener
+ const sc=X(1)-X(0),r=Math.min(46,0.35*Math.min(T.dA,T.dB)*sc),base=-Math.PI/2,toC=deg=>base+deg*Math.PI/180;
+ g.globalAlpha=.9;g.lineWidth=1.5;g.beginPath();g.arc(X(L.x),Y(L.y),r,toC(T.aA),toC(T.aB));g.stroke();
+ const lab=(t,x,y,col)=>{g.font='600 11px system-ui,sans-serif';const tw=g.measureText(t).width;g.globalAlpha=.92;g.fillStyle=css('--panel');g.fillRect(x-tw/2-3,y-10,tw+6,14);g.globalAlpha=1;g.fillStyle=col||acc;g.textAlign='center';g.fillText(t,x,y+1)};
+ const deg=v=>f(v,1).replace('-','−')+'°';
+ lab(deg(T.open),X(L.x),Y(L.y)+Math.max(24,(+S.mmmR||0)*sc+16));
+ // side lengths
+ lab(f(T.dA,2)+' m',(X(a.x)+X(L.x))/2-18,(Y(a.y)+Y(L.y))/2,muted);
+ lab(f(T.dB,2)+' m',(X(b.x)+X(L.x))/2+18,(Y(b.y)+Y(L.y))/2,muted);
+ lab(f(T.w,2)+' m',(X(a.x)+X(b.x))/2,(Y(a.y)+Y(b.y))/2+16,muted);
+ g.restore();
+ if(box){const R=S.room,sym=Math.abs(T.aA+T.aB),eq=Math.abs(T.open-60)<2;
+  box.innerHTML=`<b>Kuuntelukolmio</b> (${esc(T.A.s.name)} – kuuntelupiste – ${esc(T.B.s.name)}): avautumiskulma <b>${deg(T.open)}</b>${eq?' (tasasivuinen ≈ 60°)':T.open<60?' – kapeampi kuin tasasivuinen 60°':' – leveämpi kuin tasasivuinen 60°'} · ${esc(T.A.s.name)} ${deg(-T.aA)} vasemmalla, ${esc(T.B.s.name)} ${deg(T.aB)} oikealla${sym>=0.5?` (epäsymmetria ${deg(sym)})`:''}`+
+  `<br>Etäisyys kaiuttimiin ${f(T.dA,2)} / ${f(T.dB,2)} m${Math.abs(T.dt)>=0.05?` (ero ${f(Math.abs(T.dA-T.dB)*100,1)} cm ≈ ${f(Math.abs(T.dt),2)} ms)`:''} · kaiutinväli ${f(T.w,2)} m · korkeuskulma ${deg(T.elA)} / ${deg(T.elB)} (elementin keskikohta)`+
+  `<br>Kuuntelupiste ${f(L.y,2)} m etuseinästä (${f(L.y/R.L*100,0)} % huoneen pituudesta) · ${f(L.x,2)} / ${f(R.W-L.x,2)} m sivuseinistä`}
+}
+// ================= interactive editing on the geometry views =================
+let DRAG=null;
+function worldOf(cv,e){const m=cv._map,r=cv.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;return{m,px,py,u:(px-m.ox)/m.sc,v:m.mode==='plan'?(py-m.pad)/m.sc:m.V-(py-m.pad)/m.sc}}
+function ptsOf(mode){const P=p=>mode==='plan'?[p[0],p[1]]:[p[1],p[2]];const out=[{k:'lp',uv:P([S.lp.x,S.lp.y,S.lp.z])}];S.speakers.forEach((sp,i)=>out.push({k:'sp',i,uv:P([sp.x,sp.y,sp.z])}));return out}
+function boxUV(b,mode){const n=nb(b);return mode==='plan'?[n.x0,n.x1,n.y0,n.y1]:[n.y0,n.y1,n.z0,n.z1]}
+function hitTest(w){
+ const m=w.m,tol=7/m.sc;
+ for(const p of ptsOf(m.mode)){if(Math.hypot(p.uv[0]-w.u,p.uv[1]-w.v)<9/m.sc)return{type:'pt',p}}
+ const order=S.boxes.map((_,i)=>i).reverse();if(SEL>=0){order.splice(order.indexOf(SEL),1);order.unshift(SEL)}
+ for(const i of order){const[u0,u1,v0,v1]=boxUV(S.boxes[i],m.mode);
+  const inV=w.v>=v0-tol&&w.v<=v1+tol,inU=w.u>=u0-tol&&w.u<=u1+tol;
+  const e={l:inV&&Math.abs(w.u-u0)<tol,r:inV&&Math.abs(w.u-u1)<tol,b:inU&&Math.abs(w.v-v0)<tol,t:inU&&Math.abs(w.v-v1)<tol};
+  if(e.l||e.r||e.b||e.t)return{type:'edge',i,e};
+  if(w.u>u0&&w.u<u1&&w.v>v0&&w.v<v1)return{type:'move',i}}
+ return null;
+}
+function snapVal(val,cands,thr){let best=null,bd=thr;cands.forEach(c=>{const d=Math.abs(c-val);if(d<bd){bd=d;best=c}});return best!==null?best:Math.round(val*20)/20}
+function cursorFor(h,mode){if(!h)return'default';if(h.type==='pt'||h.type==='move')return'move';const e=h.e;
+ if((e.l||e.r)&&(e.b||e.t))return((e.l&&(mode==='plan'?e.b:e.t))||(e.r&&(mode==='plan'?e.t:e.b)))?'nwse-resize':'nesw-resize';return(e.l||e.r)?'ew-resize':'ns-resize'}
+function applyDrag(w){
+ const D=DRAG,m=w.m,du=w.u-D.u,dv=w.v-D.v,thr=8/m.sc,U=m.U,V=m.V;
+ if(D.h.type==='pt'){let u=Math.min(U,Math.max(0,D.o[0]+du)),v=Math.min(V,Math.max(0,D.o[1]+dv));u=Math.round(u*100)/100;v=Math.round(v*100)/100;
+  const tgt=D.h.p.k==='lp'?S.lp:S.speakers[D.h.p.i];if(m.mode==='plan'){tgt.x=u;tgt.y=v}else{tgt.y=u;tgt.z=v}return}
+ const b=S.boxes[D.h.i],[u0,u1,v0,v1]=D.o;
+ const others=S.boxes.filter((_,i)=>i!==D.h.i).map(x=>boxUV(x,m.mode));
+ const cu=[0,U,...others.flatMap(o=>[o[0],o[1]])],cv=[0,V,...others.flatMap(o=>[o[2],o[3]])];
+ let n0=u0,n1=u1,k0=v0,k1=v1;
+ if(D.h.type==='move'){const w0=u1-u0,h0=v1-v0;
+  let a=u0+du,a2=snapVal(a,cu,thr),b2=snapVal(a+w0,cu,thr);a=(Math.abs(a2-a)<=Math.abs(b2-(a+w0))?a2:b2-w0);a=Math.min(U-w0,Math.max(0,a));n0=a;n1=a+w0;
+  let c=v0+dv,c2=snapVal(c,cv,thr),d2=snapVal(c+h0,cv,thr);c=(Math.abs(c2-c)<=Math.abs(d2-(c+h0))?c2:d2-h0);c=Math.min(V-h0,Math.max(0,c));k0=c;k1=c+h0}
+ else{const e=D.h.e,mn=0.05;
+  if(e.l)n0=Math.min(u1-mn,Math.max(0,snapVal(u0+du,cu,thr)));if(e.r)n1=Math.max(u0+mn,Math.min(U,snapVal(u1+du,cu,thr)));
+  if(e.b)k0=Math.min(v1-mn,Math.max(0,snapVal(v0+dv,cv,thr)));if(e.t)k1=Math.max(v0+mn,Math.min(V,snapVal(v1+dv,cv,thr)))}
+ const R=x=>Math.round(x*1000)/1000;
+ if(m.mode==='plan'){b.x0=R(n0);b.x1=R(n1);b.y0=R(k0);b.y1=R(k1)}else{b.y0=R(n0);b.y1=R(n1);b.z0=R(k0);b.z1=R(k1)}
+}
+function bindEditing(id){
+ const cv=document.getElementById(id);
+ cv.addEventListener('pointerdown',e=>{if(!cv._map)return;const w=worldOf(cv,e),h=hitTest(w);
+  if(!h){if(SEL!==-1){SEL=-1;refreshBoxNotes();drawGeo(grid(),[])}return}
+  e.preventDefault();cv.setPointerCapture(e.pointerId);
+  if(h.type!=='pt'){SEL=h.i;refreshBoxNotes()}
+  const o=h.type==='pt'?h.p.uv.slice():boxUV(S.boxes[h.i],w.m.mode);DRAG={h,u:w.u,v:w.v,o,moved:false};drawGeo(grid(),[])});
+ cv.addEventListener('pointermove',e=>{if(!cv._map)return;const w=worldOf(cv,e);
+  if(!DRAG){cv.style.cursor=cursorFor(hitTest(w),w.m.mode);return}
+  DRAG.moved=true;applyDrag(w);const G=grid();drawGeo(G,[]);refreshBoxNotes();
+  if(DRAG.h.type==='pt'){bindStatic();renderSpk()}});
+ const end=e=>{if(!DRAG)return;const mv=DRAG.moved;DRAG=null;try{cv.releasePointerCapture(e.pointerId)}catch(_){}if(mv){renderSpk();bindStatic();update();refreshBoxNotes()}};
+ cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+}
+bindEditing('plan');bindEditing('side');
+function hmColor(t){const st=[[-1,[30,58,138]],[-.5,[59,130,246]],[0,[241,245,249]],[.5,[249,115,22]],[1,[185,28,28]]];t=Math.max(-1,Math.min(1,t));
+ for(let i=0;i<st.length-1;i++){const[a,ca]=st[i],[b,cb]=st[i+1];if(t<=b){const k=(t-a)/(b-a);return ca.map((v,j)=>Math.round(v+(cb[j]-v)*k))}}return st[4][1]}
+
+
+// ================= image-source reflections with boxes (visibility checked) =================
+let FITRUN=null,FIT=null,RSELROW=null;
+const SELC=['#f472b6','#22d3ee','#facc15','#4ade80','#fb923c','#a78bfa','#f87171','#2dd4bf'];
+function planesOf(st){
+ const R=st.room,a=st.alpha;
+ const P=[{name:'Vasen seinä',ax:0,v:0,n:1,a:a.left},{name:'Oikea seinä',ax:0,v:R.W,n:-1,a:a.right},{name:'Etuseinä',ax:1,v:0,n:1,a:a.front},
+  {name:'Takaseinä',ax:1,v:R.L,n:-1,a:a.back},{name:'Lattia',ax:2,v:0,n:1,a:a.floor},{name:'Katto',ax:2,v:R.H,n:-1,a:a.ceil}];
+ st.boxes.forEach((b,bi)=>{if(!b.on||b.type==='por')return;const q=nb(b),lim=[[q.x0,q.x1],[q.y0,q.y1],[q.z0,q.z1]],nm=b.name.replace(/\s*\(.*?\)\s*/g,'').trim()||'Laatikko';
+  const add=(ax,v,n,l)=>{const top=[R.W,R.L,R.H][ax];if(v<=1e-6||v>=top-1e-6)return;const o=[0,1,2].filter(k=>k!==ax);P.push({name:nm+' '+l,ax,v,n,a:b.a,o,lim:[lim[o[0]],lim[o[1]]]})};
+  add(0,q.x0,-1,'(vasen kylki)');add(0,q.x1,1,'(oikea kylki)');add(1,q.y0,-1,'(etupinta)');add(1,q.y1,1,'(takapinta)');add(2,q.z0,-1,'(alapinta)');add(2,q.z1,1,'(yläpinta)')});
+ return P;
+}
+function segHitsBox(a,b,q){let t0=0,t1=1;const e=0.002,lo=[q.x0+e,q.y0+e,q.z0+e],hi=[q.x1-e,q.y1-e,q.z1-e];
+ for(let k=0;k<3;k++){const d=b[k]-a[k];if(Math.abs(d)<1e-12){if(a[k]<lo[k]||a[k]>hi[k])return false;continue}
+  let u=(lo[k]-a[k])/d,w=(hi[k]-a[k])/d;if(u>w){const t=u;u=w;w=t}t0=Math.max(t0,u);t1=Math.min(t1,w);if(t0>t1)return false}
+ return t1>1e-6&&t0<1-1e-6}
+function solidBoxes(st){return st.boxes.filter(b=>b.on&&b.type!=='por').map(nb)}
+function porBoxes(st){return st.boxes.filter(b=>b.on&&b.type==='por').map(nb)}
+function inBoxTol(p,q,e){return p[0]>=q.x0-e&&p[0]<=q.x1+e&&p[1]>=q.y0-e&&p[1]<=q.y1+e&&p[2]>=q.z0-e&&p[2]<=q.z1+e}
+function segBlocked(a,b,BX){for(const q of BX)if(segHitsBox(a,b,q))return true;return false}
+function mirrorP(p,P){const q=p.slice();q[P.ax]=2*P.v-q[P.ax];return q}
+function hitP(a,b,P){const d=b[P.ax]-a[P.ax];if(Math.abs(d)<1e-12)return null;const t=(P.v-a[P.ax])/d;if(t<=1e-9||t>=1-1e-9)return null;return[0,1,2].map(k=>k===P.ax?P.v:a[k]+t*(b[k]-a[k]))}
+function sideOk(p,P){return (p[P.ax]-P.v)*P.n>1e-6}
+function onFace(p,P,st,BX){const R=st.room,dims=[R.W,R.L,R.H];
+ for(let k=0;k<3;k++){if(k===P.ax)continue;if(p[k]<-1e-6||p[k]>dims[k]+1e-6)return false}
+ if(P.lim){for(let j=0;j<2;j++){const k=P.o[j];if(p[k]<P.lim[j][0]-1e-6||p[k]>P.lim[j][1]+1e-6)return false}}
+ const t=p.slice();t[P.ax]+=P.n*0.004;for(const q of BX)if(t[0]>q.x0&&t[0]<q.x1&&t[1]>q.y0&&t[1]<q.y1&&t[2]>q.z0&&t[2]<q.z1)return false;return true}
+function reflections(st,si,o2,maxMs){
+ const key='refl'+JSON.stringify([st.room,st.alpha,st.boxes,st.lp,st.speakers[si],st.temp,o2,maxMs]);
+ if(reflections.k===key)return reflections.v;
+ const sp=st.speakers[si],s=[sp.x,sp.y,sp.z],m=[st.lp.x,st.lp.y,st.lp.z],c=sos(st.temp),PL=planesOf(st),BX=solidBoxes(st),PX=porBoxes(st),d0=dist(s,m),rows=[];
+ const ldb=a=>10*Math.log10(1-Math.min(Math.max(a||0,0),0.99));
+ const add=(name,order,path,pts,att)=>{const delay=(path-d0)/c*1000;if(delay>maxMs||delay<0.05)return;const seq=[s,...pts,m];
+  const tr=PX.length&&(seq.some((a,i)=>i<seq.length-1&&segBlocked(a,seq[i+1],PX))||pts.some(p=>PX.some(q=>inBoxTol(p,q,0.01))));
+  rows.push({si,spk:sp.name,name,order,path,extra:path-d0,delay,db:20*Math.log10(d0/path)+att,pts,notch:500/delay,treated:!!tr,key:si+'|'+name+'|'+delay.toFixed(2)})};
+ PL.forEach(P=>{if(!sideOk(s,P)||!sideOk(m,P))return;const img=mirrorP(s,P),p=hitP(m,img,P);if(!p||!onFace(p,P,st,BX))return;
+  if(segBlocked(s,p,BX)||segBlocked(p,m,BX))return;add(P.name,1,dist(m,img),[p],ldb(P.a))});
+ if(o2)PL.forEach(P1=>{if(!sideOk(s,P1))return;const i1=mirrorP(s,P1);
+  PL.forEach(P2=>{if(P2===P1||!sideOk(m,P2))return;const i2=mirrorP(i1,P2),p2=hitP(m,i2,P2);if(!p2||!onFace(p2,P2,st,BX)||!sideOk(p2,P1))return;
+   const p1=hitP(p2,i1,P1);if(!p1||!onFace(p1,P1,st,BX)||!sideOk(p1,P2))return;
+   if(segBlocked(s,p1,BX)||segBlocked(p1,p2,BX)||segBlocked(p2,m,BX))return;add(P1.name+' → '+P2.name,2,dist(m,i2),[p1,p2],ldb(P1.a)+ldb(P2.a))})});
+ rows.sort((a,b)=>a.delay-b.delay);
+ const out={rows,d0,direct:!segBlocked(s,m,BX),directTreated:PX.length>0&&segBlocked(s,m,PX)};reflections.k=key;reflections.v=out;return out;
+}
+function rSelColor(k){const i=(S.rSel||[]).indexOf(k);return i<0?null:SELC[i%SELC.length]}
+function selRefl(){const out=[];S.speakers.forEach((_,si)=>{reflections(S,si,true,60).rows.forEach(r=>{if((S.rSel||[]).includes(r.key))out.push(r)})});
+ return (S.rSel||[]).map(k=>out.find(r=>r.key===k)).filter(Boolean)}
+function combCurve(F,rows){return F.map(fr=>{const w=2*Math.PI*fr;let re=1,im=0;rows.forEach(r=>{const a=Math.pow(10,r.db/20),ph=w*r.delay/1000;re+=a*Math.cos(ph);im-=a*Math.sin(ph)});return 20*Math.log10(Math.hypot(re,im)+1e-12)})}
+function toggleRSel(k,on){const a=(S.rSel||[]).filter(x=>x!==k);if(on)a.push(k);S.rSel=a;update()}
+
+// compact picker next to the response chart
+function renderRespPicker(){
+ const box=document.getElementById('respPick');if(!box)return;
+ const prev=box.querySelector('.plist'),scroll=prev?prev.scrollTop:0;
+ const ids=S.src==='all'?S.speakers.map((_,i)=>i):[+S.src||0],o2=S.etcO2!==false,maxD=Math.max(2,S.pickMax||25),multi=ids.length>1;
+ const rows=ids.flatMap(si=>reflections(S,si,o2,60).rows).filter(r=>r.delay<=maxD).sort((a,b)=>a.delay-b.delay),nsel=(S.rSel||[]).length;
+ box.innerHTML=`<div class="phead"><b>Heijastukset vasteeseen</b><label class="pmax">≤ <input type="number" class="pmx" min="2" step="5" value="${maxD}"> ms</label>${nsel?`<button class="pclr">Tyhjennä (${nsel})</button>`:''}</div>
+  <div class="plist">${rows.map(r=>{const c=rSelColor(r.key);return`<label class="prow${c?' on':''}" style="--c:${c||'transparent'}"><input type="checkbox" data-k="${esc(r.key)}"${c?' checked':''}>
+   <span class="pn">${multi?'<span class="dot" style="background:'+COLORS[r.si%COLORS.length]+'"></span>':''}${esc(r.name)}${r.treated?' ◆':''}</span><span class="pv">${f(r.delay,2)} ms</span><span class="pv">${f(r.db,1)} dB</span><span class="pv">${f(r.notch,0)} Hz</span></label>`}).join('')||'<div class="hint" style="padding:6px">Ei heijastuksia.</div>'}</div>
+  <div class="hint" style="margin:4px 0 0">Viive · taso bassolla · 1. vaimentuma. ◆ = reitti kulkee huokoisen vaimentimen kautta (todellinen taso on pienempi). Valinta piirtää heijastuksen kampasuodinvasteen (suora ääni + heijastus) kuvaajaan; usean valinnan yhteisvaste piirretään pisteviivana.</div>`;
+ box.querySelector('.plist').scrollTop=scroll;
+ box.querySelectorAll('.plist input').forEach(cb=>cb.onchange=()=>toggleRSel(cb.dataset.k,cb.checked));
+ box.querySelector('.pmx').onchange=e=>{const n=num(e.target.value);if(n)S.pickMax=n;update()};
+ const cl=box.querySelector('.pclr');if(cl)cl.onclick=()=>{S.rSel=[];update()};
+}
+
+// ================= ETC =================
+const BANDS={bb:null,lf:[40,160],o63:[44,89],o125:[88,177],lf2:[80,320],o250:[177,354]};
+function bandW(fr,b){if(!b)return 1;if(fr<=0)return 0;const e=0.5,l=Math.log2(fr/b[0]),h=Math.log2(b[1]/fr);const sm=v=>v>=0?1:v<=-e?0:0.5-0.5*Math.cos(Math.PI*(v+e)/e);return sm(l)*sm(h)}
+// squared envelope of the analytic, band-limited signal; wfun(f) = extra complex weight [re,im] or null
+function bandEnv(x,s0,s1,fs,b,wfun){
+ const L=s1-s0,N=nextPow2(L)*2,re=new Float64Array(N),im=new Float64Array(N);for(let i=s0;i<s1;i++)re[i-s0]=x[i];fft(re,im,false);
+ for(let k=0;k<N;k++){if(k===0||k>=N/2){re[k]=0;im[k]=0;continue}const fr=k*fs/N;let w=2*bandW(fr,b);
+  if(wfun){const c=wfun(fr);const a=re[k],bb=im[k];re[k]=w*(a*c[0]-bb*c[1]);im[k]=w*(a*c[1]+bb*c[0])}else{re[k]*=w;im[k]*=w}}
+ fft(re,im,true);const env=new Float64Array(L);for(let i=0;i<L;i++)env[i]=re[i]*re[i]+im[i]*im[i];return env}
+function measETC(b){const{x,ip,fs}=measIR(),key='etc'+S.wavCh+'|'+S.etcBand;if(MEAS.cache[key])return MEAS.cache[key];
+ const s0=Math.max(0,ip-Math.round(0.03*fs)),s1=Math.min(x.length,ip+Math.round(0.25*fs)),env=bandEnv(x,s0,s1,fs,b,null);
+ const out={env,t0:(ip-s0)/fs*1000,fs};MEAS.cache[key]=out;return out}
+function simETC(si,b){const key='etc'+si+'|'+S.etcBand+'|'+S.spkFc;if(RES.cache[key])return RES.cache[key];
+ const x=RES.per[si].micOut[0],fs=1/RES.G.dt,sg=RES.sigma,t0=RES.t0;
+ const env=bandEnv(x,0,x.length,fs,b,fr=>{const w=2*Math.PI*fr,G=Math.exp(-Math.pow(Math.PI*sg*fr,2))*w*w,hp=Math.pow(10,spkHP(fr)/20)/G,ph=w*t0;return[hp*Math.cos(ph),hp*Math.sin(ph)]});
+ const sp=S.speakers[si],d=dist([sp.x,sp.y,sp.z],[S.lp.x,S.lp.y,S.lp.z]);
+ const out={env,t0:d/RES.G.c*1000,fs};RES.cache[key]=out;return out}
+function drawETC(){
+ const sel=document.getElementById('etcSpk');const o=S.speakers.map((s,i)=>`<option value="${i}">${esc(s.name)}</option>`).join('');if(sel.dataset.o!==o){sel.innerHTML=o;sel.dataset.o=o}
+ if(+S.etcSpk>=S.speakers.length)S.etcSpk='0';sel.value=S.etcSpk;sel.onchange=()=>{S.etcSpk=sel.value;update()};
+ const eb=document.getElementById('etcBand');eb.value=S.etcBand||'lf';eb.onchange=()=>{S.etcBand=eb.value;update()};
+ const e2=document.getElementById('etcO2');e2.checked=S.etcO2!==false;e2.onchange=()=>{S.etcO2=e2.checked;update()};
+ const si=+S.etcSpk,b=BANDS[S.etcBand||'lf'],res=b?1000/(b[1]-b[0]):0,range=Math.max(5,S.etcRange||30),floor=Math.min(-10,S.etcFloor||-40),tmin=-1,nw=Math.max(0.5,res/2);
+ const R=reflections(S,si,S.etcO2!==false,range),pred=R.rows;
+ const curves=[];
+ const toCurve=(E,name,col,dash)=>{const T=[],D=[];for(let i=0;i<E.env.length;i++){const t=i/E.fs*1000-E.t0;if(t<tmin)continue;if(t>range)break;T.push(t);D.push(10*Math.log10(E.env[i]+1e-30))}
+  let mx=-1e9;T.forEach((t,k)=>{if(Math.abs(t)<=nw&&D[k]>mx)mx=D[k]});if(mx<-1e8)mx=Math.max(...D);curves.push({name,col,dash,T,D:D.map(v=>v-mx)})};
+ if(MEAS)toCurve(measETC(b),'Mitattu',css('--text'),[]);
+ const simOk=RES&&RES.per[si]&&b&&b[1]<=RES.G.fRel*1.15;
+ if(simOk)toCurve(simETC(si,b),'Simulaatio',css('--accent'),[6,4]);
+ const cv=document.getElementById('etcCv'),H=340,{g,cw}=setupCanvas(cv,H),padL=42,padR=12,padT=12,padB=34,pw=cw-padL-padR,ph=H-padT-padB;
+ const X=t=>padL+(t-tmin)/(range-tmin)*pw,Y=v=>padT+(3-Math.max(floor,Math.min(3,v)))/(3-floor)*ph;
+ const text=css('--text'),muted=css('--muted'),line=css('--line');
+ g.font='10px system-ui,sans-serif';g.strokeStyle=line;g.lineWidth=1;g.fillStyle=muted;
+ const stp=range<=12?1:range<=40?2:range<=100?5:10;
+ for(let t=0;t<=range;t+=stp){g.beginPath();g.moveTo(X(t),padT);g.lineTo(X(t),padT+ph);g.stroke();g.textAlign='center';g.fillText(t,X(t),padT+ph+13)}
+ for(let v=0;v>=floor;v-=10){g.beginPath();g.moveTo(padL,Y(v));g.lineTo(padL+pw,Y(v));g.stroke();g.textAlign='right';g.fillText(v,padL-5,Y(v)+3)}
+ g.textAlign='right';g.fillText('ms',padL+pw,padT+ph+27);
+ const lvCol=db=>db>-10?css('--bad'):db>-15?css('--mid'):css('--ok');
+ const lab=pred.slice().sort((a,c)=>c.db-a.db).slice(0,Math.max(0,S.etcLabels|0));
+ pred.forEach(r=>{const x=X(r.delay),c=rSelColor(r.key)||lvCol(r.db),strong=lab.includes(r)||rSelColor(r.key)||RSELROW===r.key;
+  g.strokeStyle=c;g.globalAlpha=strong?.85:.3;g.lineWidth=strong?1.5:1;g.setLineDash(r.order===2?[3,3]:[]);g.beginPath();g.moveTo(x,padT);g.lineTo(x,padT+ph);g.stroke();g.setLineDash([]);
+  g.globalAlpha=strong?1:.5;g.fillStyle=c;const y=Y(r.db);g.beginPath();g.moveTo(x,y);g.lineTo(x-4,y-6);g.lineTo(x+4,y-6);g.closePath();g.fill();g.globalAlpha=1});
+ g.save();g.beginPath();g.rect(padL,padT,pw,ph);g.clip();
+ curves.forEach(cu=>{g.strokeStyle=cu.col;g.lineWidth=1.6;g.setLineDash(cu.dash);g.beginPath();cu.T.forEach((t,k)=>k?g.lineTo(X(t),Y(cu.D[k])):g.moveTo(X(t),Y(cu.D[k])));g.stroke();g.setLineDash([])});
+ g.restore();
+ g.font='600 10px system-ui,sans-serif';const used=[];
+ lab.slice().sort((a,c)=>a.delay-c.delay).forEach(r=>{const x=X(r.delay);let row=0;while(used.some(o=>Math.abs(o-x)<12&&false))row++;used.push(x);
+  g.save();g.translate(x+3,padT+4);g.rotate(Math.PI/2);const tw=g.measureText(r.name).width;g.fillStyle=css('--panel');g.globalAlpha=.8;g.fillRect(-1,-9,tw+2,11);g.globalAlpha=1;g.fillStyle=rSelColor(r.key)||lvCol(r.db);g.textAlign='left';g.fillText(r.name,0,0);g.restore()});
+ g.font='11px system-ui,sans-serif';g.textAlign='right';g.fillStyle=text;g.fillText(b?`Kaista ${b[0]}–${b[1]} Hz · aikaerottelu ≈ ${f(res,1)} ms`:'Laajakaista',padL+pw-6,padT+ph-10);
+ let lx=padL+8;g.textAlign='left';curves.forEach(cu=>{g.fillStyle=cu.col;g.fillRect(lx,padT+ph-14,14,3);g.fillStyle=text;g.fillText(cu.name,lx+18,padT+ph-9);lx+=g.measureText(cu.name).width+36});
+ if(!curves.length){g.fillStyle=muted;g.textAlign='center';g.fillText(MEAS?'':'Tuo mittaus Vaste-välilehdellä tai laske simulaatio ja valitse bassokaista.',padL+pw/2,padT+ph/2)}
+ if(b&&RES&&!simOk){g.fillStyle=css('--warn');g.textAlign='left';g.fillText('Kaista on simulaation ylärajan yläpuolella – simulaatiota ei näytetä.',padL+8,padT+14)}
+ if(R.directTreated){g.fillStyle=css('--warn');g.textAlign='left';g.fillText('Huom: suora reitti kulkee huokoisen vaimentimen läpi.',padL+8,padT+42)}
+ if(!R.direct){g.fillStyle=css('--warn');g.textAlign='left';g.fillText('Huom: suora reitti kaiuttimesta kuuntelupisteeseen kulkee kappaleen läpi.',padL+8,padT+28)}
+ const c=sos(S.temp);
+ cv.onmousemove=e=>{const rc=cv.getBoundingClientRect(),t=tmin+(e.clientX-rc.left-padL)/pw*(range-tmin);if(t<tmin||t>range)return;
+  const vals=curves.map(cu=>{let k=0,bd=1e9;cu.T.forEach((v,i)=>{const d=Math.abs(v-t);if(d<bd){bd=d;k=i}});return cu.name+' '+f(cu.D[k],1)+' dB'}).join(' · ');
+  const near=pred.filter(r=>Math.abs(r.delay-t)<=Math.max(0.25,res/6)).map(r=>esc(r.name)+' '+f(r.delay,2)+' ms').join(', ');
+  document.getElementById('etcRead').innerHTML=`<b>${f(t,2)} ms</b> (lisämatka ${f(t*c/1000,2)} m)${vals?': '+vals:''}${near?' · heijastukset: '+near:''}`};
+ // table
+ const tb=document.getElementById('reflRows');
+ tb.innerHTML=pred.map(r=>{const sc=rSelColor(r.key),lv=r.db>-10?'color:var(--bad)':r.db>-15?'color:var(--mid)':'color:var(--ok)';
+  return`<tr data-k="${esc(r.key)}" class="${RSELROW===r.key?'rsel':''}"><td style="text-align:center"><label class="vchk" style="--c:${sc||'var(--line)'}"><input type="checkbox" data-k2="${esc(r.key)}"${sc?' checked':''}></label></td>
+   <td class="l">${esc(r.name)}${r.treated?' <span class="tag">vaimentimen kautta</span>':''}</td><td>${r.order}</td><td><b>${f(r.delay,2)}</b></td><td>${f(r.extra,3)}</td><td style="${lv}">${f(r.db,1)}</td><td>${f(r.notch,0)}</td>
+   <td class="l">${r.pts.map(q=>q.map(v=>f(v,2)).join(' / ')).join(' → ')}</td></tr>`}).join('')||'<tr><td colspan="8" class="l" style="color:var(--muted)">Ei heijastuksia aikavälillä.</td></tr>';
+ tb.querySelectorAll('tr[data-k]').forEach(tr=>tr.onclick=()=>{RSELROW=RSELROW===tr.dataset.k?null:tr.dataset.k;drawETC()});
+ tb.querySelectorAll('input[data-k2]').forEach(cb=>{cb.onclick=e=>e.stopPropagation();cb.onchange=()=>toggleRSel(cb.dataset.k2,cb.checked)});
+ tb.querySelectorAll('.vchk').forEach(l=>l.onclick=e=>e.stopPropagation());
+ // path views
+ const G0=grid(),cc=cut(),CI=cutIdx(G0,cc);
+ sliceDraw('etcPlan',G0,'plan',CI.k,null,cc.z);sliceDraw('etcSide',G0,'side',CI.i,null,cc.x);
+ const show=pred.filter(r=>rSelColor(r.key)||RSELROW===r.key);
+ ['etcPlan','etcSide'].forEach(id=>{const cvp=document.getElementById(id),m=cvp._map;if(!m)return;const gg=cvp.getContext('2d');
+  const P=p=>m.mode==='plan'?[m.ox+p[0]*m.sc,m.pad+p[1]*m.sc]:[m.ox+p[1]*m.sc,m.pad+(m.V-p[2])*m.sc];
+  const sp=S.speakers[si],sP=[sp.x,sp.y,sp.z],mP=[S.lp.x,S.lp.y,S.lp.z];
+  show.forEach(r=>{const pts=[sP,...r.pts,mP].map(P),col=rSelColor(r.key)||css('--accent');gg.strokeStyle=col;gg.lineWidth=RSELROW===r.key?3:2;gg.beginPath();pts.forEach((q,i)=>i?gg.lineTo(q[0],q[1]):gg.moveTo(q[0],q[1]));gg.stroke();
+   r.pts.forEach(q=>{const a=P(q);gg.fillStyle=col;gg.beginPath();gg.arc(a[0],a[1],4,0,7);gg.fill()})});
+  if(!show.length){gg.fillStyle=css('--muted');gg.font='11px system-ui,sans-serif';gg.textAlign='center';gg.fillText('Valitse heijastus taulukosta',m.ox+m.U*m.sc/2,m.pad+m.V*m.sc/2)}});
+}
+
+// ================= automatic fitting =================
+const FITPARAMS=[
+ {id:'spkZ',name:'Kaiuttimen korkeus',kind:'off',r:0.15,unit:'m',apply:(st,v,ids)=>ids.forEach(i=>st.speakers[i].z+=v)},
+ {id:'spkY',name:'Kaiuttimen etäisyys etuseinästä',kind:'off',r:0.10,unit:'m',apply:(st,v,ids)=>ids.forEach(i=>st.speakers[i].y+=v)},
+ {id:'spkX',name:'Kaiuttimen sivusuuntainen paikka',kind:'off',r:0.10,unit:'m',apply:(st,v,ids)=>ids.forEach(i=>st.speakers[i].x+=v)},
+ {id:'lpZ',name:'Kuuntelupisteen korkeus',kind:'off',r:0.10,unit:'m',apply:(st,v)=>{st.lp.z+=v}},
+ {id:'lpY',name:'Kuuntelupisteen etäisyys etuseinästä',kind:'off',r:0.10,unit:'m',apply:(st,v)=>{st.lp.y+=v}},
+ {id:'W',name:'Huoneen tehollinen leveys',kind:'scale',r:0.10,apply:(st,v)=>{st.room.W*=v}},
+ {id:'L',name:'Huoneen tehollinen pituus',kind:'scale',r:0.10,apply:(st,v)=>{st.room.L*=v}},
+ {id:'H',name:'Huoneen tehollinen korkeus',kind:'scale',r:0.10,apply:(st,v)=>{st.room.H*=v}},
+ {id:'a.front',name:'α etuseinä',kind:'abs',lo:0.02,hi:0.8,apply:(st,v)=>{st.alpha.front=v}},
+ {id:'a.back',name:'α takaseinä',kind:'abs',lo:0.02,hi:0.8,apply:(st,v)=>{st.alpha.back=v}},
+ {id:'a.left',name:'α vasen seinä',kind:'abs',lo:0.02,hi:0.8,apply:(st,v)=>{st.alpha.left=v}},
+ {id:'a.right',name:'α oikea seinä',kind:'abs',lo:0.02,hi:0.8,apply:(st,v)=>{st.alpha.right=v}},
+ {id:'a.floor',name:'α lattia',kind:'abs',lo:0.02,hi:0.8,apply:(st,v)=>{st.alpha.floor=v}},
+ {id:'a.ceil',name:'α katto',kind:'abs',lo:0.02,hi:0.9,apply:(st,v)=>{st.alpha.ceil=v}},
+ {id:'a.box',name:'α kaikki kiinteät laatikot',kind:'abs',lo:0.02,hi:0.8,apply:(st,v)=>{st.boxes.forEach(b=>{if(b.type!=='por')b.a=v})}},
+ {id:'por.s',name:'Virtausvastus, kaikki vaimentimet',kind:'abs',lo:2,hi:60,apply:(st,v)=>{st.boxes.forEach(b=>{if(b.type==='por')b.sig=v})}}];
+function fitInit(p,st){if(p.kind==='off')return 0;if(p.kind==='scale')return 1;if(p.id==='a.box'){const b=st.boxes.find(x=>x.on&&x.type!=='por');return b?b.a:0.3}if(p.id==='por.s'){const b=st.boxes.find(x=>x.on&&x.type==='por');return b?(b.sig||10):10}return getP(st,'alpha.'+p.id.slice(2))}
+function fitRange(p){return p.kind==='off'?[-p.r,p.r]:p.kind==='scale'?[1-p.r,1+p.r]:[p.lo,p.hi]}
+function fitFmt(p,v){return p.kind==='off'?(v>=0?'+':'')+f(v*100,0)+' cm':p.kind==='scale'?(v>=1?'+':'')+f((v-1)*100,1)+' %':f(v,2)}
+function renderFitParams(){
+ const box=document.getElementById('fitParams');S.fitP=S.fitP||{};
+ box.innerHTML=FITPARAMS.map(p=>{const r=fitRange(p);return`<label><input type="checkbox" data-fp="${p.id}"${S.fitP[p.id]?' checked':''}> ${esc(p.name)} <span class="rng">${p.kind==='off'?'±'+f(p.r*100,0)+' cm':p.kind==='scale'?'±'+f(p.r*100,0)+' %':f(r[0],2)+'–'+f(r[1],2)}</span></label>`}).join('');
+ box.querySelectorAll('input').forEach(el=>el.onchange=()=>{S.fitP[el.dataset.fp]=el.checked;save();fitEstimate()});
+ const ff=document.getElementById('fitFast');ff.checked=S.fitFast!==false;ff.onchange=()=>{S.fitFast=ff.checked;save();fitEstimate()};
+ document.getElementById('fitGo').onclick=()=>runFit();
+ document.getElementById('fitStop').onclick=()=>{if(FITRUN)FITRUN.stop=true};
+ fitEstimate();
+}
+function fitIds(){return S.src==='all'?S.speakers.map((_,i)=>i):[Math.min(S.speakers.length-1,+S.src||0)]}
+function fitActive(){return FITPARAMS.filter(p=>S.fitP&&S.fitP[p.id])}
+function fitEstimate(){const n=fitActive().length,runs=1+n*4*(+S.fitRounds||2),G=grid(S,S.fitFast!==false?{dx:0.125,dur:0.35}:{});
+ const t=runs*fitIds().length*G.nx*G.ny*G.nz*G.steps/6e7;if(!FITRUN)document.getElementById('fitStat').textContent=n?`${n} parametria · noin ${runs*fitIds().length} simulaatiota · arviolta ${t<90?f(t,0)+' s':f(t/60,1)+' min'}`:'Valitse vähintään yksi parametri.'}
+function fitTarget(F){const{x,ip,fs}=measIR(),sp=specOf(x,ip,fs,S.win||500,null);const v=F.map(fr=>frAt(fr,sp,12));const m=v.slice().sort((a,b)=>a-b)[v.length>>1];return v.map(a=>a-m)}
+async function fitEval(st,F,tgt,o,prog){
+ const G=grid(st,o),ids=fitIds(),mics=st.useMMM?micPoints(st):[micPoints(st)[0]],dec=simDeconv0(G),sum=mics.map(()=>new Float32Array(G.steps));
+ for(const si of ids){const P=buildP(st,G,si,{mics});const R=await runOne(P,prog);if(FITRUN&&FITRUN.stop)return null;R.micOut.forEach((a,m)=>{for(let n=0;n<a.length;n++)sum[m][n]+=a[n]})}
+ const lp=[st.lp.x,st.lp.y,st.lp.z],d=Math.min(...ids.map(i=>{const s=st.speakers[i];return dist([s.x,s.y,s.z],lp)})),sg=1/(Math.PI*G.c/(10*G.dx)),ip=Math.round((4*sg+d/G.c)/G.dt);
+ const win=Math.min(S.win||500,(o.dur||st.dur)*1000-ip*G.dt*1000-10),specs=sum.map(x=>specOf(x,ip,1/G.dt,win,dec));
+ const v=F.map(fr=>10*Math.log10(specs.reduce((a,sp)=>a+Math.pow(10,frAt(fr,sp,12)/10),0)/specs.length)+spkHP(fr)),m=v.slice().sort((a,b)=>a-b)[v.length>>1],vn=v.map(a=>a-m);
+ let e=0;for(let i=0;i<F.length;i++){const d_=Math.max(-12,Math.min(12,vn[i]-tgt[i]));e+=d_*d_}return{err:Math.sqrt(e/F.length),v:vn};
+}
+function simDeconv0(G){const s=1/(Math.PI*G.c/(10*G.dx));return fr=>{const w=2*Math.PI*fr,g=Math.exp(-Math.pow(Math.PI*s*fr,2));return Math.pow(w*w*g,2)+1e-30}}
+async function runFit(){
+ const stat=document.getElementById('fitStat');
+ if(!MEAS){stat.textContent='Tuo ensin mittaus (WAV).';return}
+ const ps=fitActive();if(!ps.length){stat.textContent='Valitse vähintään yksi parametri.';return}
+ if(running&&worker){worker.terminate();worker=null;running=false}
+ const fast=S.fitFast!==false,o=fast?{dx:0.125,dur:0.35}:{};
+ const fMaxSim=grid(S,o).fRel,f0=Math.max(20,S.fitMin||40),f1=Math.min(S.fitMax||200,fMaxSim);
+ const F=[];for(let fr=f0;fr<=f1;fr*=Math.pow(2,1/48))F.push(fr);
+ const tgt=fitTarget(F),base=clone(S),ids=fitIds(),vals={};ps.forEach(p=>vals[p.id]=fitInit(p,base));
+ const build=vv=>{const st=clone(base);ps.forEach(p=>{if(p.kind==='abs')p.apply(st,vv[p.id],ids)});ps.forEach(p=>{if(p.kind!=='abs')p.apply(st,vv[p.id],ids)});return st};
+ FITRUN={stop:false};FIT=null;const rounds=+S.fitRounds||2,total=1+ps.length*4*rounds;let done=0;const t0=Date.now();
+ const step=(name)=>{stat.textContent=`Sovitetaan: ${name} · ajo ${done}/${total} · ${((Date.now()-t0)/1000).toFixed(0)} s`;setProg(done/total)};
+ step('lähtötilanne');
+ let best=await fitEval(build(vals),F,tgt,o,()=>{});if(!best){FITRUN=null;stat.textContent='Keskeytetty.';return}done++;const err0=best.err;
+ let h={};ps.forEach(p=>{const r=fitRange(p);h[p.id]=(r[1]-r[0])/6});
+ for(let rd=0;rd<rounds;rd++){
+  for(const p of ps){const r=fitRange(p),cur=vals[p.id],cand=[cur-2*h[p.id],cur-h[p.id],cur+h[p.id],cur+2*h[p.id]].map(v=>Math.min(r[1],Math.max(r[0],v))).filter((v,i,a)=>Math.abs(v-cur)>1e-6&&a.indexOf(v)===i);
+   for(const v of cand){step(p.name+' '+fitFmt(p,v));const vv=Object.assign({},vals,{[p.id]:v}),res=await fitEval(build(vv),F,tgt,o,()=>{});
+    if(!res){FITRUN=null;stat.textContent='Keskeytetty.';return}done++;if(res.err<best.err-1e-4){best=res;vals[p.id]=v}}
+   done+=4-cand.length}
+  ps.forEach(p=>h[p.id]/=2.5)}
+ FITRUN=null;setProg(1);
+ FIT={err0,err1:best.err,vals,ps:ps.map(p=>p.id),base:clone(base),state:build(vals),F,v:best.v,fast};
+ stat.textContent=`Valmis ${((Date.now()-t0)/1000).toFixed(0)} s: virhe ${f(err0,2)} → ${f(best.err,2)} dB.`;
+ renderFitRes();update();
+}
+function renderFitRes(){
+ const box=document.getElementById('fitRes');if(!FIT){box.innerHTML='';return}
+ const ids=fitIds();
+ const rows=FIT.ps.map(id=>{const p=FITPARAMS.find(q=>q.id===id),v=FIT.vals[id],a=fitInit(p,FIT.base);
+  let abs='';if(id==='spkZ')abs=ids.map(i=>f(FIT.state.speakers[i].z,2)+' m').join(', ');else if(id==='spkY')abs=ids.map(i=>f(FIT.state.speakers[i].y,2)+' m').join(', ');else if(id==='spkX')abs=ids.map(i=>f(FIT.state.speakers[i].x,2)+' m').join(', ');
+  else if(id==='lpZ')abs=f(FIT.state.lp.z,2)+' m';else if(id==='lpY')abs=f(FIT.state.lp.y,2)+' m';else if(id==='W')abs=f(FIT.state.room.W,2)+' m';else if(id==='L')abs=f(FIT.state.room.L,2)+' m';else if(id==='H')abs=f(FIT.state.room.H,2)+' m';
+  const edge=(()=>{const r=fitRange(p);return Math.abs(v-r[0])<1e-6||Math.abs(v-r[1])<1e-6})();
+  const dg=p.id==='por.s'?0:2;
+  return`<tr><td class="l">${esc(p.name)}</td><td>${p.kind==='abs'?f(a,dg):'–'}</td><td><b>${p.kind==='abs'?f(v,dg):fitFmt(p,v)}</b></td><td>${abs}</td><td class="l" style="color:var(--warn)">${edge?'hakualueen reunalla':''}</td></tr>`}).join('');
+ box.innerHTML=`<table><thead><tr><th class="l">Parametri</th><th>Alku</th><th>Sovitettu</th><th>Uusi arvo</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+  <p class="hint">Virhe ${f(FIT.err0,2)} → <b>${f(FIT.err1,2)} dB</b>${FIT.fast?' (nopealla esilaskennalla; täysi simulaatio voi poiketa hieman)':''}. Sovitettu käyrä näkyy vastekuvaajassa oranssina katkoviivana. Jos arvo jää hakualueen reunalle, todellinen arvo voi olla alueen ulkopuolella tai jokin muu tekijä selittää eron.</p>
+  <div class="btns"><button class="go2" id="fitApply">Ota sovitetut arvot käyttöön</button><button id="fitDiscard">Hylkää</button></div>`;
+ document.getElementById('fitApply').onclick=()=>{const st=FIT.state;['room','alpha','lp','speakers','boxes'].forEach(k=>S[k]=clone(st[k]));FIT=null;renderFitRes();RES=null;renderSpk();renderBoxes();renderFitParams();bindStatic();update();runSim()};
+ document.getElementById('fitDiscard').onclick=()=>{FIT=null;renderFitRes();update()};
+}
+
+
+// ================= wall maps: first-order reflection points and treatment zones =================
+function firstOrderPt(st,P,s,m,BX){if(!sideOk(s,P)||!sideOk(m,P))return null;const img=mirrorP(s,P),p=hitP(m,img,P);
+ if(!p||!onFace(p,P,st,BX))return null;if(segBlocked(s,p,BX)||segBlocked(p,m,BX))return null;return p}
+function wallAxes(P,st){const R=st.room,dims=[R.W,R.L,R.H];
+ if(P.ax===0)return{u:1,w:2,up:true,rev:P.n===1};if(P.ax===1)return{u:0,w:2,up:true,rev:P.n===-1};return{u:0,w:1,up:false,rev:false}}
+function drawWallMaps(){
+ const sel=document.getElementById('wmSpk');const o='<option value="all">Kaikki</option>'+S.speakers.map((s,i)=>`<option value="${i}">${esc(s.name)}</option>`).join('');
+ if(sel.dataset.o!==o){sel.innerHTML=o;sel.dataset.o=o}if(S.mapSpk!=='all'&&+S.mapSpk>=S.speakers.length)S.mapSpk='all';sel.value=S.mapSpk;sel.onchange=()=>{S.mapSpk=sel.value;update()};
+ const st=S,R=st.room,dims=[R.W,R.L,R.H],PL=planesOf(st),BX=solidBoxes(st),PX=porBoxes(st),hx=Math.max(0,S.headXY||0),hz=Math.max(0,S.headZ||0);
+ const mic=[st.lp.x,st.lp.y,st.lp.z],spk=st.speakers.map((sp,i)=>({i,sp,s:[sp.x,sp.y,sp.z]})).filter(o=>S.mapSpk==='all'||o.i===+S.mapSpk);
+ const offs=[];[-hx,0,hx].forEach(a=>[-hx,0,hx].forEach(b=>[-hz,0,hz].forEach(c=>offs.push([a,b,c]))));
+ const clampIn=p=>[Math.min(Math.max(p[0],0.01),R.W-0.01),Math.min(Math.max(p[1],0.01),R.L-0.01),Math.min(Math.max(p[2],0.01),R.H-0.01)];
+ const data=PL.map((P,pi)=>{const A=wallAxes(P,st);const hits=spk.map(o=>{const p=firstOrderPt(st,P,o.s,mic,BX);let bb=null;
+   offs.forEach(d=>{const q=firstOrderPt(st,P,o.s,clampIn([mic[0]+d[0],mic[1]+d[1],mic[2]+d[2]]),BX);if(!q)return;const a=q[A.u],b=q[A.w];
+    if(!bb)bb=[a,a,b,b];else{bb[0]=Math.min(bb[0],a);bb[1]=Math.max(bb[1],a);bb[2]=Math.min(bb[2],b);bb[3]=Math.max(bb[3],b)}});
+   const tr=p&&PX.some(q=>inBoxTol(p,q,0.01)||segBlocked(o.s,p,[q])||segBlocked(p,mic,[q]));
+   return{o,p,bb,tr,lvl:p?20*Math.log10(dist(o.s,mic)/(dist(o.s,p)+dist(p,mic)))+10*Math.log10(1-Math.min(0.99,P.a||0)):null}}).filter(h=>h.p||h.bb);
+  return{P,A,hits,pi}}).filter(d=>!d.P.lim||d.hits.length);
+ const box=document.getElementById('wallMaps');
+ box.innerHTML=data.map((d,k)=>{const P=d.P,A=d.A,ua='xyz'[A.u],wa='xyz'[A.w];
+  const view=P.ax===2?'ylhäältä katsottuna':'huoneesta katsottuna';
+  const li=d.hits.map(h=>{const pt=h.p?`${ua} ${f(h.p[A.u],2)} · ${wa} ${f(h.p[A.w],2)} m`:'ei osumaa nimellispisteestä';
+   const z=h.bb?`alue ${ua} ${f(h.bb[0],2)}–${f(h.bb[1],2)}, ${wa} ${f(h.bb[2],2)}–${f(h.bb[3],2)} m (${f(h.bb[1]-h.bb[0],2)} × ${f(h.bb[3]-h.bb[2],2)} m)`:'';
+   return`<li><span class="dot" style="background:${COLORS[h.o.i%COLORS.length]}"></span><b>${esc(h.o.sp.name)}</b>: ${pt}${h.lvl!==null?` · taso bassolla ${f(h.lvl,1)} dB`:''}${h.tr?' <span class="tag">vaimentimen kohdalla</span>':''}<br><span style="color:var(--muted)">${z}</span></li>`}).join('');
+  return`<div class="wmap"><h3>${esc(P.name)} <span>${P.lim?'(laatikon pinta) · ':''}${view}</span></h3><canvas id="wm${k}"></canvas>
+   <ul class="maplist">${li||'<li style="color:var(--muted)">Ei 1. kertaluvun heijastusta tältä pinnalta (reitti puuttuu tai on peittynyt).</li>'}</ul></div>`}).join('');
+ data.forEach((d,k)=>drawWallMap(document.getElementById('wm'+k),d,st,BX,PX));
+}
+function drawWallMap(cv,d,st,BX,PX){
+ const P=d.P,A=d.A,R=st.room,dims=[R.W,R.L,R.H];
+ const u0=P.lim?P.lim[P.o.indexOf(A.u)][0]:0,u1=P.lim?P.lim[P.o.indexOf(A.u)][1]:dims[A.u],w0=P.lim?P.lim[P.o.indexOf(A.w)][0]:0,w1=P.lim?P.lim[P.o.indexOf(A.w)][1]:dims[A.w];
+ const uw=Math.max(u1-u0,0.01),wh=Math.max(w1-w0,0.01),padL=30,padR=10,padT=10,padB=26;
+ const cw=Math.max(cv.clientWidth,220),sc=Math.min((cw-padL-padR)/uw,200/wh),ch=wh*sc+padT+padB,dpr=window.devicePixelRatio||1;
+ cv.style.height=ch+'px';cv.width=cw*dpr;cv.height=ch*dpr;const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,cw,ch);
+ const ox=padL+((cw-padL-padR)-uw*sc)/2,X=u=>A.rev?ox+(u1-u)*sc:ox+(u-u0)*sc,Y=w=>A.up?padT+(w1-w)*sc:padT+(w-w0)*sc;
+ const text=css('--text'),muted=css('--muted'),line=css('--line'),solidC=css('--solid');
+ g.fillStyle=muted+'14';g.fillRect(ox,padT,uw*sc,wh*sc);
+ g.strokeStyle=line;g.lineWidth=1;g.beginPath();
+ for(let u=Math.ceil(u0*2)/2;u<u1;u+=0.5){if(u<=u0)continue;g.moveTo(X(u),padT);g.lineTo(X(u),padT+wh*sc)}
+ for(let w=Math.ceil(w0*2)/2;w<w1;w+=0.5){if(w<=w0)continue;g.moveTo(ox,Y(w));g.lineTo(ox+uw*sc,Y(w))}g.stroke();
+ // parts covered by boxes touching this surface
+ [...BX.map(q=>[q,solidC]),...(PX||[]).map(q=>[q,css('--por')])].forEach(([q,colr])=>{const lo=[q.x0,q.y0,q.z0],hi=[q.x1,q.y1,q.z1],touch=P.n>0?Math.abs(lo[P.ax]-P.v)<0.02:Math.abs(hi[P.ax]-P.v)<0.02;if(!touch)return;
+  const a0=Math.max(lo[A.u],u0),a1=Math.min(hi[A.u],u1),b0=Math.max(lo[A.w],w0),b1=Math.min(hi[A.w],w1);if(a1<=a0||b1<=b0)return;
+  const xa=Math.min(X(a0),X(a1)),ya=Math.min(Y(b0),Y(b1)),ww=Math.abs(X(a1)-X(a0)),hh=Math.abs(Y(b1)-Y(b0));
+  g.save();g.beginPath();g.rect(xa,ya,ww,hh);g.clip();g.fillStyle=colr;g.globalAlpha=.35;g.fillRect(xa,ya,ww,hh);g.globalAlpha=.8;g.strokeStyle=colr;g.beginPath();
+  for(let t=-hh;t<ww;t+=6){g.moveTo(xa+t,ya+hh);g.lineTo(xa+t+hh,ya)}g.stroke();g.restore()});
+ g.strokeStyle=text;g.lineWidth=1.5;g.strokeRect(ox,padT,uw*sc,wh*sc);
+ g.fillStyle=muted;g.font='10px system-ui,sans-serif';
+ const lv=A.rev?u1:u0,rv=A.rev?u0:u1;g.textAlign='left';g.fillText(f(lv,1)+(A.rev?' m':''),ox,padT+wh*sc+12);g.textAlign='right';g.fillText(f(rv,1)+(A.rev?'':' m'),ox+uw*sc,padT+wh*sc+12);
+ g.textAlign='center';g.fillText((A.rev?'← ':'')+'xyz'[A.u]+(A.rev?'':' →'),ox+uw*sc/2,padT+wh*sc+22);
+ g.save();g.translate(12,padT+wh*sc/2);g.rotate(-Math.PI/2);g.textAlign='center';g.fillText('xyz'[A.w]+(A.up?' ↑':' ↓'),0,0);g.restore();
+ g.textAlign='right';g.fillText(f(A.up?w1:w0,1),padL-4,padT+8);g.fillText(f(A.up?w0:w1,1),padL-4,padT+wh*sc);
+ const labels=[];
+ d.hits.forEach(h=>{const col=COLORS[h.o.i%COLORS.length];
+  if(h.bb){const x0=X(h.bb[0]),x1=X(h.bb[1]),y0=Y(h.bb[2]),y1=Y(h.bb[3]),rx=Math.min(x0,x1),ry=Math.min(y0,y1),rw=Math.max(Math.abs(x1-x0),2),rh=Math.max(Math.abs(y1-y0),2);
+   g.fillStyle=col;g.globalAlpha=.15;g.fillRect(rx,ry,rw,rh);g.globalAlpha=1;g.strokeStyle=col;g.lineWidth=1.5;g.setLineDash([4,3]);g.strokeRect(rx,ry,rw,rh);g.setLineDash([])}
+  if(h.p){const px=X(h.p[A.u]),py=Y(h.p[A.w]);g.fillStyle=col;g.beginPath();g.arc(px,py,4.5,0,7);g.fill();g.strokeStyle=css('--panel');g.lineWidth=1.5;g.stroke();
+   labels.push({px,py,col,lbl:f(h.p[A.u],2)+' / '+f(h.p[A.w],2)})}});
+ g.font='600 11px system-ui,sans-serif';g.textAlign='left';const placed=[];
+ labels.forEach(L=>{const tw=g.measureText(L.lbl).width+14,th=15;let tx=L.px+8;if(tx+tw>cw-2)tx=L.px-8-tw;
+  const cands=[];for(let k=0;k<6;k++){cands.push(L.py-18-k*th);cands.push(L.py+6+k*th)}
+  let ty=cands.find(y=>y>=1&&y+th<=ch-1&&!placed.some(p=>tx<p.x+p.w&&tx+tw>p.x&&y<p.y+p.h&&y+th>p.y));if(ty===undefined)ty=Math.max(1,L.py-18);
+  placed.push({x:tx,y:ty,w:tw,h:th});g.fillStyle=css('--panel');g.globalAlpha=.9;g.fillRect(tx,ty,tw,th);g.globalAlpha=1;g.strokeStyle=L.col;g.lineWidth=1;g.strokeRect(tx+.5,ty+.5,tw-1,th-1);
+  g.fillStyle=L.col;g.fillRect(tx+3,ty+4,6,7);g.fillStyle=text;g.fillText(L.lbl,tx+12,ty+11.5)});
+}
+
+// ================= results =================
+function drawResults(){
+ const ok=RES&&RES.per.length;
+ if(S.tab==='resp'){drawFR();drawEvo()}
+ if(S.tab==='map')drawMap();
+ if(S.tab==='decay')drawDecay();
+ if(S.tab==='resp')renderSnaps();
+ if(S.tab==='etc'){drawETC();drawDR()}
+ if(S.tab==='walls')drawWallMaps();
+ if(S.tab==='resp')renderRespPicker();
+ if(!ok)return;
+}
+function axesLog(g,X,Y,f0,f1,lo,hi,padL,padT,pw,ph){
+ const line=css('--line'),muted=css('--muted');g.font='10px system-ui,sans-serif';g.strokeStyle=line;g.lineWidth=1;g.fillStyle=muted;
+ [10,15,20,30,40,50,60,70,80,90,100,150,200,300,400,500].filter(v=>v>=f0&&v<=f1).forEach(v=>{g.beginPath();g.moveTo(X(v),padT);g.lineTo(X(v),padT+ph);g.stroke();
+  if([10,20,30,40,50,60,80,100,150,200,300,400,500].includes(v)){g.textAlign='center';g.fillText(v,X(v),padT+ph+13)}});
+ const ys=hi-lo>40?10:5;for(let v=Math.ceil(lo/ys)*ys;v<=hi;v+=ys){g.beginPath();g.moveTo(padL,Y(v));g.lineTo(padL+pw,Y(v));g.stroke();g.textAlign='right';g.fillText((v>0?'+':'')+v,padL-5,Y(v)+3)}
+ g.textAlign='right';g.fillText('Hz',padL+pw,padT+ph+26);
+}
+// room average on a fixed 1/48-octave grid (computed once per source), interpolated to any frequency list
+function roomAvg(idx,Fq){
+ const base=roomAvgBase(idx),FF=base.F,V=base.v;
+ return Fq.map(fr=>{if(fr<=FF[0])return V[0];if(fr>=FF[FF.length-1])return V[V.length-1];
+  const t=Math.log(fr/FF[0])/Math.log(2)*48,i=Math.floor(t),u=t-i;return V[i]*(1-u)+V[i+1]*u});
+}
+function roomAvgBase(idx){
+ const key='avgb'+idx.join(',');if(RES.cache[key])return RES.cache[key];
+ const F=[];for(let fr=10;fr<=RES.G.fRel*1.3;fr*=Math.pow(2,1/48))F.push(fr);
+ const G=RES.G,ns=RES.per[idx[0]].ns,fs=1/(G.dt*RES.dec),dec=simDeconv(),acc=new Float64Array(F.length);let cnt=0;
+ const cosT=F.map(fr=>{const w=2*Math.PI*fr/fs,c=new Float64Array(ns),s=new Float64Array(ns);for(let n=0;n<ns;n++){const win=n>ns*0.75?0.5+0.5*Math.cos(Math.PI*(n-ns*0.75)/(ns*0.25)):1;c[n]=Math.cos(w*n)*win;s[n]=Math.sin(w*n)*win}return[c,s]});
+ const add=(get,nCells,isAir)=>{for(let q=0;q<nCells;q+=2){if(!isAir(q))continue;cnt++;
+  const ser=new Float64Array(ns);for(let n=0;n<ns;n++)ser[n]=get(n,q);
+  for(let fi=0;fi<F.length;fi++){const[c,s]=cosT[fi];let re=0,im=0;for(let n=0;n<ns;n++){const v=ser[n];re+=v*c[n];im+=v*s[n]}acc[fi]+=(re*re+im*im)/dec(F[fi])}}};
+ const S2=G.nx*G.ny;
+ add((n,q)=>{let v=0;for(const i of idx)v+=RES.per[i].sZ[n*S2+q];return v},S2,q=>!G.solid[q+S2*RES.kz]);
+ const S3=G.ny*G.nz;
+ add((n,q)=>{let v=0;for(const i of idx)v+=RES.per[i].sX[n*S3+q];return v},S3,q=>{const j=q%G.ny,k=Math.floor(q/G.ny);return !G.solid[RES.ix+G.nx*(j+G.ny*k)]});
+ const out={F,v:Array.from(acc,v=>10*Math.log10(v/Math.max(cnt,1)+1e-40))};RES.cache[key]=out;return out;
+}
+function drawFR(){
+ const cv=document.getElementById('frCv'),H=380,{g,cw}=setupCanvas(cv,H),padL=42,padR=12,padT=14,padB=34,pw=cw-padL-padR,ph=H-padT-padB;
+ const text=css('--text'),muted=css('--muted'),acc=css('--accent');
+ const fLim=RES?RES.G.fRel:300,f0=Math.max(5,S.fMin||20),f1=Math.max(f0*1.5,Math.min(S.fMax||250,MEAS?20000:fLim*1.2));
+ const NP=500,F=[];for(let i=0;i<NP;i++)F.push(f0*Math.pow(f1/f0,i/(NP-1)));
+ const series=[];const sm=+S.smooth||0;
+ const simVals=()=>{const idx=srcIdx(),ip=simIp(idx),fs=1/RES.G.dt,dec=simDeconv(),lim=RES.G.fRel;
+  const key='fr'+idx+'|'+S.win+'|'+S.useMMM;
+  let specs=RES.cache[key];
+  if(!specs){const ms=S.useMMM?RES.mics.map((_,m)=>m):[0];specs=ms.map(m=>specOf(simMic(m,idx),ip,fs,S.win||500,dec));RES.cache[key]=specs}
+  return F.map(fr=>fr>lim*1.25?NaN:10*Math.log10(specs.reduce((a,sp)=>a+Math.pow(10,frAt(fr,sp,sm)/10),0)/specs.length)+spkHP(fr))};
+ SNAPS.filter(sn=>sn.on).forEach(sn=>series.push({name:'Vertailu: '+sn.name,col:sn.col,v:withSnap(sn,simVals),w:1.6,dash:[7,4],snap:true}));
+ if(RES){
+  const idx=srcIdx();
+  const v=simVals();
+  series.push({name:'Simulaatio'+(S.useMMM?' (kuuntelualue)':''),col:acc,v,w:2,sim:true});
+  if(S.showAvg){const ra=roomAvg(idx,F.map(fr=>Math.min(fr,fLim*1.25)));series.push({name:'Huoneen keskiarvo',col:muted,v:ra.map((x,i)=>F[i]>fLim*1.25?NaN:x+spkHP(F[i])),w:1.4,dash:[5,4],avg:true})}
+ }
+ if(MEAS){const{x,ip,fs}=measIR();const key='m'+S.wavCh+'|'+S.win;if(!MEAS.cache[key])MEAS.cache[key]=specOf(x,ip,fs,S.win||500,null);
+  series.unshift({name:'Mitattu',col:text,v:F.map(fr=>frAt(fr,MEAS.cache[key],sm)),w:1.8})}
+ // normalise each to its median over 30-200 Hz
+ const medOf=v=>{const sel=v.filter((x,i)=>isFinite(x)&&F[i]>=30&&F[i]<=200).sort((a,b)=>a-b);return sel.length?sel[sel.length>>1]:0};
+ const simS=series.find(s=>s.sim),rSim=simS?medOf(simS.v):null;
+ series.forEach(s=>{const r=s.snap&&rSim!==null?rSim:medOf(s.v);s.v=s.v.map(x=>x-r)});
+ if(FIT&&MEAS){const vv=F.map(fr=>{if(fr<FIT.F[0]||fr>FIT.F[FIT.F.length-1])return NaN;const t=Math.log(fr/FIT.F[0])/Math.log(2)*48,i=Math.floor(t),u=t-i;return FIT.v[i]*(1-u)+(FIT.v[i+1]??FIT.v[i])*u});
+  const mS=series.find(s=>s.name==='Mitattu');let off=0;if(mS){const d=[];F.forEach((fr,i)=>{if(isFinite(vv[i])&&isFinite(mS.v[i]))d.push(mS.v[i]-vv[i])});d.sort((a,b)=>a-b);off=d.length?d[d.length>>1]:0}
+  series.push({name:'Sovitettu malli',col:css('--warn'),v:vv.map(x=>x+off),w:2,dash:[6,3]})}
+ const sr=selRefl();sr.forEach(r=>series.push({name:r.name+' '+f(r.delay,1)+' ms',col:rSelColor(r.key),v:combCurve(F,[r]),w:1.5}));
+ if(sr.length>1)series.push({name:'Valitut yhteensä',col:text,v:combCurve(F,sr),w:2.2,dash:[1,3]});
+ const all=series.flatMap(s=>s.v.filter(isFinite));
+ let hi=all.length?Math.ceil((Math.max(...all)+3)/5)*5:10,lo=all.length?Math.floor((Math.min(...all)-3)/5)*5:-30;lo=Math.max(lo,hi-50);if(hi-lo<20)lo=hi-20;
+ const X=fr=>padL+Math.log(fr/f0)/Math.log(f1/f0)*pw,Y=v=>padT+(hi-v)/(hi-lo)*ph;
+ axesLog(g,X,Y,f0,f1,lo,hi,padL,padT,pw,ph);
+ if(RES&&fLim<f1){g.fillStyle=css('--line');g.globalAlpha=.35;g.fillRect(X(fLim),padT,padL+pw-X(fLim),ph);g.globalAlpha=1;g.fillStyle=muted;g.textAlign='left';g.fillText('simulaation yläraja',X(fLim)+4,padT+12)}
+ if(S.evoF>=f0&&S.evoF<=f1){g.strokeStyle=css('--warn');g.setLineDash([5,4]);g.lineWidth=1;g.beginPath();g.moveTo(X(S.evoF),padT);g.lineTo(X(S.evoF),padT+ph);g.stroke();g.setLineDash([])}
+ g.save();g.beginPath();g.rect(padL,padT,pw,ph);g.clip();
+ series.forEach(s=>{g.strokeStyle=s.col;g.lineWidth=s.w;g.setLineDash(s.dash||[]);g.beginPath();let st=false;s.v.forEach((v,i)=>{if(!isFinite(v)){st=false;return}st?g.lineTo(X(F[i]),Y(v)):(g.moveTo(X(F[i]),Y(v)),st=true)});g.stroke();g.setLineDash([])});
+ g.restore();
+ let lx=padL+8,ly=padT+ph-9;g.font='11px system-ui,sans-serif';g.textAlign='left';
+ series.forEach(s=>{const wN=g.measureText(s.name).width+36;if(lx+wN>padL+pw){lx=padL+8;ly-=15}g.fillStyle=s.col;g.fillRect(lx,ly-5,14,3);g.fillStyle=text;g.fillText(s.name,lx+18,ly);lx+=wN});
+ if(!series.length){g.fillStyle=muted;g.textAlign='center';g.font='13px system-ui,sans-serif';g.fillText('Laske simulaatio tai tuo mittaus.',padL+pw/2,padT+ph/2)}
+ const fAt=e=>{const rc=cv.getBoundingClientRect();return f0*Math.pow(f1/f0,Math.min(1,Math.max(0,(e.clientX-rc.left-padL)/pw)))};
+ cv.style.cursor='crosshair';
+ cv.onmousemove=e=>{const fr=fAt(e);let i=0,bd=1e9;F.forEach((v,k)=>{const d=Math.abs(Math.log(v/fr));if(d<bd){bd=d;i=k}});
+  document.getElementById('frRead').innerHTML=`<b>${f(F[i],1)} Hz</b>: `+series.map(s=>`${esc(s.name)} ${f(s.v[i],1)} dB`).join(' · ')};
+ cv.onclick=e=>{const fr=Math.round(fAt(e)*2)/2;S.evoF=fr;S.mapF=fr;const el=document.querySelector('[data-k="evoF"]');if(el)el.value=fr;update()};
+ // resonance table
+ const tb=document.getElementById('resRows');
+ if(RES){const idx=srcIdx(),fL=Math.min(fLim,S.fMax||250),FF=[];for(let fr=Math.max(15,f0);fr<=fL;fr*=Math.pow(2,1/96))FF.push(fr);
+  const ra=roomAvg(idx,FF),ip=simIp(idx),fs=1/RES.G.dt;
+  const key='lp'+idx+'|'+FF.length;let lpS=RES.cache[key];if(!lpS){lpS=specOf(simMic(0,idx),ip,fs,Math.min(1000,S.dur*1000),simDeconv());RES.cache[key]=lpS}
+  const pk=[];for(let i=2;i<ra.length-2;i++)if(ra[i]>ra[i-1]&&ra[i]>=ra[i+1]&&ra[i]>ra[i-2]&&ra[i]>=ra[i+2])pk.push(i);
+  const med=ra.slice().sort((a,b)=>a-b)[ra.length>>1];
+  // offset of LP curve vs room average (median difference)
+  const lpv=FF.map(fr=>frAt(fr,lpS,48)),dif=lpv.map((v,i)=>v-ra[i]).sort((a,b)=>a-b),off=dif[dif.length>>1];
+  tb.innerHTML=pk.filter(i=>ra[i]-med>-3).map(i=>`<tr data-f="${FF[i].toFixed(1)}"><td><b>${f(FF[i],1)}</b></td><td>${f(ra[i]-med,1)}</td><td>${f(lpv[i]-ra[i]-off,1)}</td></tr>`).join('')||'<tr><td colspan="3" class="l" style="color:var(--muted)">Ei tunnistettuja resonansseja.</td></tr>';
+  tb.querySelectorAll('tr[data-f]').forEach(tr=>tr.onclick=()=>{S.mapF=+tr.dataset.f;S.evoF=S.mapF;showTab('map')});
+ }else tb.innerHTML='<tr><td colspan="3" class="l" style="color:var(--muted)">Laske simulaatio.</td></tr>';
+}
+function drawEvo(){
+ const cv=document.getElementById('evoCv'),H=260,{g,cw}=setupCanvas(cv,H),padL=42,padR=12,padT=12,padB=34,pw=cw-padL-padR,ph=H-padT-padB;
+ const text=css('--text'),muted=css('--muted'),acc=css('--accent'),line=css('--line');
+ const fr=Math.max(10,S.evoF||83),Ws=[6,8,10,12,15,18,22,26,30,35,40,50,60,70,80,100,120,150,200,250,300,400,500];
+ const fq=S.evoRef==='nb'?[fr/Math.SQRT2,fr,fr*Math.SQRT2]:[fr];
+ const curve=(x,ip,fs,deconv)=>{const long=dftPow(x,ip,fs,500,fq,deconv);return Ws.map(w=>{const p=dftPow(x,ip,fs,w,fq,deconv);return S.evoRef==='nb'?p[1]-(p[0]+p[2])/2:p[0]-long[0]})};
+ const series=[];
+ if(RES){const idx=srcIdx(),key='evo'+idx+'|'+fr+'|'+S.evoRef+'|'+S.useMMM;let v=RES.cache[key];
+  if(!v){const ms=S.useMMM?RES.mics.map((_,m)=>m):[0],ip=simIp(idx),fs=1/RES.G.dt,dec=simDeconv();
+   const cs=ms.map(m=>curve(simMic(m,idx),ip,fs,dec));v=Ws.map((_,i)=>cs.reduce((a,c)=>a+c[i],0)/cs.length);RES.cache[key]=v}
+  series.push({name:'Simulaatio',col:acc,v})}
+ if(MEAS){const{x,ip,fs}=measIR();const key='evo'+S.wavCh+'|'+fr+'|'+S.evoRef;if(!MEAS.cache[key])MEAS.cache[key]=curve(x,ip,fs,null);series.unshift({name:'Mitattu',col:text,v:MEAS.cache[key]})}
+ const all=series.flatMap(s=>s.v);let hi=all.length?Math.ceil((Math.max(...all)+2)/5)*5:10,lo=all.length?Math.floor((Math.min(...all)-2)/5)*5:-20;if(hi-lo<15)lo=hi-15;
+ const X=w=>padL+Math.log(w/Ws[0])/Math.log(Ws[Ws.length-1]/Ws[0])*pw,Y=v=>padT+(hi-v)/(hi-lo)*ph;
+ g.font='10px system-ui,sans-serif';g.strokeStyle=line;g.lineWidth=1;g.fillStyle=muted;
+ [6,10,20,30,50,100,200,300,500].forEach(w=>{g.beginPath();g.moveTo(X(w),padT);g.lineTo(X(w),padT+ph);g.stroke();g.textAlign='center';g.fillText(w,X(w),padT+ph+13)});
+ for(let v=Math.ceil(lo/5)*5;v<=hi;v+=5){g.beginPath();g.moveTo(padL,Y(v));g.lineTo(padL+pw,Y(v));g.stroke();g.textAlign='right';g.fillText((v>0?'+':'')+v,padL-5,Y(v)+3)}
+ g.textAlign='right';g.fillText('aikaikkuna, ms',padL+pw,padT+ph+26);
+ const per=1000/fr;g.fillStyle=line;g.globalAlpha=.35;g.fillRect(padL,padT,Math.max(0,X(Math.max(Ws[0],3*per))-padL),ph);g.globalAlpha=1;
+ g.fillStyle=muted;g.textAlign='left';if(3*per>Ws[0])g.fillText('< 3 jaksoa',padL+4,padT+12);
+ g.strokeStyle=muted;g.beginPath();g.moveTo(padL,Y(0));g.lineTo(padL+pw,Y(0));g.stroke();
+ series.forEach(s=>{g.strokeStyle=s.col;g.lineWidth=2;g.beginPath();s.v.forEach((v,i)=>i?g.lineTo(X(Ws[i]),Y(v)):g.moveTo(X(Ws[i]),Y(v)));g.stroke();
+  g.fillStyle=s.col;s.v.forEach((v,i)=>{g.beginPath();g.arc(X(Ws[i]),Y(v),2.5,0,7);g.fill()})});
+ let lx=padL+8;g.font='11px system-ui,sans-serif';g.textAlign='left';
+ series.forEach(s=>{g.fillStyle=s.col;g.fillRect(lx,padT+ph-14,14,3);g.fillStyle=text;g.fillText(s.name+' · '+f(fr,1)+' Hz',lx+18,padT+ph-9);lx+=g.measureText(s.name+' · '+f(fr,1)+' Hz').width+36});
+ const yl=S.evoRef==='nb'?'dB suhteessa naapuritaajuuksiin':'dB suhteessa 500 ms:n ikkunaan';
+ g.save();g.translate(11,padT+ph/2);g.rotate(-Math.PI/2);g.textAlign='center';g.fillStyle=muted;g.font='10px system-ui,sans-serif';g.fillText(yl,0,0);g.restore();
+ cv.onmousemove=e=>{const rc=cv.getBoundingClientRect(),x=e.clientX-rc.left;let i=0,bd=1e9;Ws.forEach((w,k)=>{const d=Math.abs(X(w)-x);if(d<bd){bd=d;i=k}});
+  document.getElementById('evoRead').innerHTML=`<b>${Ws[i]} ms</b>: `+series.map(s=>`${esc(s.name)} ${f(s.v[i],1)} dB`).join(' · ')+(series.length?'':' –')};
+}
+function mapField(idx,mode,freqs){
+ const G=RES.G,ns=RES.per[idx[0]].ns,fs=1/(G.dt*RES.dec),dec=simDeconv();
+ const nu=mode==='plan'?G.nx:G.ny,nv=mode==='plan'?G.ny:G.nz,S2=nu*nv,out=new Float64Array(S2);
+ const isAir=(a,b)=>mode==='plan'?!G.solid[a+G.nx*(b+G.ny*RES.kz)]:!G.solid[RES.ix+G.nx*(a+G.ny*b)];
+ freqs.forEach(fr=>{const w=2*Math.PI*fr/fs,c=new Float64Array(ns),s=new Float64Array(ns);
+  for(let n=0;n<ns;n++){const win=n>ns*0.75?0.5+0.5*Math.cos(Math.PI*(n-ns*0.75)/(ns*0.25)):1;c[n]=Math.cos(w*n)*win;s[n]=Math.sin(w*n)*win}
+  const re=new Float64Array(S2),im=new Float64Array(S2);
+  idx.forEach(i=>{const arr=mode==='plan'?RES.per[i].sZ:RES.per[i].sX;for(let n=0;n<ns;n++){const cn=c[n],sn=s[n],o=n*S2;for(let q=0;q<S2;q++){const v=arr[o+q];re[q]+=v*cn;im[q]+=v*sn}}});
+  const d=dec(fr),sc2=Math.pow(G.dt*RES.dec,2);for(let q=0;q<S2;q++)out[q]+=(re[q]*re[q]+im[q]*im[q])*sc2/d});
+ const v=new Array(S2);for(let b=0;b<nv;b++)for(let a=0;a<nu;a++){const q=b*nu+a;v[q]=isAir(a,b)?10*Math.log10(out[q]/freqs.length+1e-40):null}
+ return v;
+}
+// level at the listening point itself (same processing as the slice maps)
+function lpLevel(idx,freqs){
+ const x=simMic(0,idx),n=x.length,dt=RES.G.dt,dec=simDeconv();let acc=0;
+ freqs.forEach(fr=>{const w=2*Math.PI*fr*dt;let re=0,im=0;for(let i=0;i<n;i++){const win=i>n*0.75?0.5+0.5*Math.cos(Math.PI*(i-n*0.75)/(n*0.25)):1;re+=x[i]*win*Math.cos(w*i);im-=x[i]*win*Math.sin(w*i)}
+  acc+=(re*re+im*im)*dt*dt/dec(fr)});
+ return 10*Math.log10(acc/freqs.length+1e-40);
+}
+function drawMap(){
+ const fMax=RES?RES.G.fRel:300,fa=15,fb=fMax;S.mapF=Math.min(fb,Math.max(fa,S.mapF||83));
+ const fr=S.mapF;document.getElementById('mapFOut').textContent=f(fr,1)+' Hz'+(S.mapBand?' (1/3 okt)':'');
+ document.getElementById('mapFIn').value=fr;document.getElementById('mapSlider').value=Math.round(Math.log(fr/fa)/Math.log(fb/fa)*1000);
+ if(!RES){const G0=grid(),c=cut(),CI=cutIdx(G0,c);sliceDraw('mapPlan',G0,'plan',CI.k,null,c.z);sliceDraw('mapSide',G0,'side',CI.i,null,c.x);document.getElementById('mapRead').textContent='Laske simulaatio ensin.';return}
+ document.getElementById('mapPlanT').textContent='Vaakaleikkaus korkeudella z = '+f(RES.cut.z,2)+' m (etuseinä ylhäällä)';
+ document.getElementById('mapSideT').textContent='Pystyleikkaus kohdassa x = '+f(RES.cut.x,2)+' m (etuseinä vasemmalla)';
+ const idx=srcIdx(),freqs=S.mapBand?[-3,-2,-1,0,1,2,3].map(k=>fr*Math.pow(2,k/18)):[fr];
+ const key='map'+idx+'|'+fr+'|'+S.mapBand;let M=RES.cache[key];
+ if(!M){M={plan:mapField(idx,'plan',freqs),side:mapField(idx,'side',freqs)};RES.cache[key]=M}
+ const G=RES.G,lkey='lpl'+idx+'|'+fr+'|'+S.mapBand;if(RES.cache[lkey]===undefined)RES.cache[lkey]=lpLevel(idx,freqs);
+ const med=(()=>{const a=M.plan.filter(v=>v!==null).sort((x,y)=>x-y);return a[a.length>>1]})(),lpv=RES.cache[lkey];
+ const ref=S.mapRef==='med'?med:lpv;
+ const rng=Math.max(3,S.mapRange||15);
+ sliceDraw('mapPlan',G,'plan',RES.kz,{v:M.plan,ref,rng},RES.cut.z);sliceDraw('mapSide',G,'side',RES.ix,{v:M.side,ref,rng},RES.cut.x);
+ document.getElementById('mapRead').innerHTML=`<b>${f(fr,1)} Hz</b>: kuuntelupiste ${f(lpv-med,1)} dB suhteessa leikkauksen mediaaniin. Vie hiiri kartan päälle.`;
+ ['mapPlan','mapSide'].forEach(id=>{const cv=document.getElementById(id),field=id==='mapPlan'?M.plan:M.side;
+  cv.onmousemove=e=>{const m=cv._map;if(!m)return;const rc=cv.getBoundingClientRect(),u=(e.clientX-rc.left-m.ox)/m.sc,vv=(e.clientY-rc.top-m.pad)/m.sc;if(u<0||vv<0||u>m.U||vv>m.V)return;
+   const a=Math.min(m.nu-1,Math.floor(u/G.dx)),b=Math.min(m.nv-1,Math.floor((m.mode==='plan'?vv:m.V-vv)/G.dx)),val=field[b*m.nu+a];
+   const pos=m.mode==='plan'?`x ${f(u,2)} · y ${f(vv,2)} m`:`y ${f(u,2)} · z ${f(m.V-vv,2)} m`;
+   document.getElementById('mapRead').innerHTML=`<b>${pos}</b>: `+(val===null?'kiinteä kappale':`${f(val-lpv,1)} dB suhteessa kuuntelupisteeseen · ${f(val-med,1)} dB suhteessa mediaaniin`)}});
+}
+
+
+// ================= measured IR decimated for fast bass analysis =================
+function measDec(){const{x,ip,fs}=measIR(),key='dec'+S.wavCh;if(MEAS.cache[key])return MEAS.cache[key];
+ const D=Math.max(1,Math.floor(fs/3000)),M=8*D,h=new Float64Array(2*M+1),fc=0.4/D;let sw=0;
+ for(let k=-M;k<=M;k++){const w=0.42+0.5*Math.cos(Math.PI*k/M)+0.08*Math.cos(2*Math.PI*k/M),v=k===0?2*fc:Math.sin(2*Math.PI*fc*k)/(Math.PI*k);h[k+M]=v*w;sw+=v*w}
+ const n=Math.floor(x.length/D),y=new Float64Array(n);
+ for(let i=0;i<n;i++){let a=0;const c=i*D;for(let k=-M;k<=M;k++){const j=c+k;if(j>=0&&j<x.length)a+=h[k+M]*x[j]}y[i]=a/sw}
+ return MEAS.cache[key]={x:y,ip:Math.round(ip/D),fs:fs/D}}
+// levels at F for windows starting t = 0, step, … (relative to the impulse position ip)
+function slideLevels(xs,ip,fs,deconv,F,win,step,span,hp){const out={t:[],v:[],trunc:false},W=Math.round(win*fs);
+ for(let k=0;;k++){const t=k*step;if(t>span+1e-9)break;const st=ip+Math.round(t*fs);if(st+W>xs[0].length){out.trunc=true;break}
+  const sps=xs.map(x=>specOf(x,st,fs,win*1000,deconv));out.t.push(t);
+  out.v.push(F.map(fr=>10*Math.log10(sps.reduce((a,sp)=>a+Math.pow(10,frAt(fr,sp,24)/10),0)/sps.length)+(hp?spkHP(fr):0)))}
+ return out}
+function csdF(){const f0=Math.min(900,Math.max(10,+S.csdF0||20)),f1=Math.max(f0*1.5,Math.min(+S.csdF1||250,1000));const F=[];for(let i=0;i<260;i++)F.push(f0*Math.pow(f1/f0,i/259));return F}
+function csdMeasData(F){if(!MEAS)return null;const P=[S.csdWin,S.csdSpan,S.csdStep,F[0],F[F.length-1]].join('|'),key='csd'+S.wavCh+'|'+P;if(MEAS.cache[key])return MEAS.cache[key];
+ const d=measDec();return MEAS.cache[key]=slideLevels([d.x],d.ip,d.fs,null,F,(S.csdWin||300)/1000,(S.csdStep||20)/1000,(S.csdSpan||400)/1000,false)}
+function normCSD(D,F){if(!D||!D.v.length)return D;const sel=D.v[0].filter((x,i)=>F[i]>=30&&F[i]<=200).sort((a,b)=>a-b),r=sel.length?sel[sel.length>>1]:0;return{t:D.t,trunc:D.trunc,v:D.v.map(row=>row.map(x=>x-r))}}
+function drawWaterfall(cvId,D,F,hi,lo,msg){
+ const cv=document.getElementById(cvId),H=500,{g,cw}=setupCanvas(cv,H),padL=44,padR=92,padT=12,padB=34;
+ const muted=css('--muted'),line=css('--line'),text=css('--text');
+ const f0=F[0],f1=F[F.length-1],K=D&&D.v?D.v.length:0,dX=Math.min(260,cw*0.24),dY=Math.min(210,H*0.42),pw=cw-padL-padR-dX,ph=H-padT-padB-dY;
+ const X=fr=>padL+Math.log(fr/f0)/Math.log(f1/f0)*pw,Y=v=>padT+dY+(hi-Math.max(lo,Math.min(hi,v)))/(hi-lo)*ph;
+ const dep=k=>K>1?1-k/(K-1):0; // 1 = back (t = 0), 0 = front (latest)
+ const yF=Y(lo);
+ // floor: depth guide lines for frequencies and the back edge
+ g.font='10px system-ui,sans-serif';g.lineWidth=1;g.strokeStyle=line;
+ const ticks=[10,15,20,30,40,50,60,80,100,150,200,300,400,500,700,1000].filter(v=>v>=f0&&v<=f1);
+ ticks.forEach(v=>{g.beginPath();g.moveTo(X(v),yF);g.lineTo(X(v)+dX,yF-dY);g.stroke()});
+ g.beginPath();g.moveTo(X(f0)+dX,yF-dY);g.lineTo(X(f1)+dX,yF-dY);g.stroke();
+ // back wall: dB grid behind the earliest slice
+ for(let v=Math.ceil(lo/10)*10;v<=hi;v+=10){g.beginPath();g.moveTo(X(f0)+dX,Y(v)-dY);g.lineTo(X(f1)+dX,Y(v)-dY);g.stroke()}
+ g.beginPath();g.moveTo(X(f0)+dX,yF-dY);g.lineTo(X(f0)+dX,Y(hi)-dY);g.stroke();
+ if(!K){g.fillStyle=muted;g.textAlign='center';g.font='13px system-ui,sans-serif';g.fillText(msg||'Ei dataa.',padL+(pw+dX)/2,padT+dY+ph/2);cv._wf=null;return}
+ const col=v=>{const c=cmap(0.12+0.88*(v-lo)/(hi-lo));return`rgb(${c[0]},${c[1]},${c[2]})`};
+ for(let k=0;k<K;k++){const d=dep(k),ox=d*dX,oy=-d*dY,row=D.v[k];
+  for(let i=0;i<row.length-1;i++){const a=Math.max(lo,row[i]),b=Math.max(lo,row[i+1]);if(a<=lo+0.05&&b<=lo+0.05)continue;
+   const x0=X(F[i])+ox,x1=X(F[i+1])+ox+0.6;g.fillStyle=col((a+b)/2);g.beginPath();g.moveTo(x0,Y(a)+oy);g.lineTo(x1,Y(b)+oy);g.lineTo(x1,yF+oy);g.lineTo(x0,yF+oy);g.closePath();g.fill()}
+  g.strokeStyle=k===0?text:'rgba(0,0,0,.55)';g.lineWidth=k===0?1.6:0.8;g.beginPath();
+  row.forEach((v,i)=>i?g.lineTo(X(F[i])+ox,Y(v)+oy):g.moveTo(X(F[i])+ox,Y(v)+oy));g.stroke();
+  g.strokeStyle=line;g.lineWidth=0.6;g.beginPath();g.moveTo(X(f0)+ox,yF+oy);g.lineTo(X(f1)+ox,yF+oy);g.stroke()}
+ // front axes
+ g.strokeStyle=muted;g.lineWidth=1;g.beginPath();g.moveTo(X(f0),yF);g.lineTo(X(f1),yF);g.lineTo(X(f1)+dX,yF-dY);g.stroke();
+ g.beginPath();g.moveTo(padL,Y(hi));g.lineTo(padL,yF);g.stroke();
+ g.fillStyle=muted;g.textAlign='center';ticks.forEach(v=>g.fillText(v,X(v),yF+13));g.textAlign='right';g.fillText('Hz',X(f1),yF+26);
+ for(let v=Math.ceil(lo/10)*10;v<=hi;v+=10){g.textAlign='right';g.fillText((v>0?'+':'')+String(v).replace('-','−'),padL-5,Y(v)+3)}
+ const every=Math.max(1,Math.round(K/6));g.textAlign='left';
+ for(let k=0;k<K;k+=every){const d=dep(k);g.fillText(Math.round(D.t[k]*1000)+' ms',X(f1)+d*dX+6,yF-d*dY+3)}
+ // colour bar
+ const bx=cw-padR+50,bw=12,bt=padT,bh=Math.min(180,ph+dY*0.5);for(let i=0;i<bh;i++){const c=cmap(0.12+0.88*(1-i/bh));g.fillStyle=`rgb(${c[0]},${c[1]},${c[2]})`;g.fillRect(bx,bt+i,bw,1.5)}
+ g.fillStyle=muted;g.textAlign='right';[hi,lo+(hi-lo)/2,lo].forEach(v=>g.fillText((v>0?'+':'')+String(Math.round(v)).replace('-','−'),bx-3,bt+(hi-v)/(hi-lo)*bh+3));g.textAlign='left';g.fillText('dB',bx,bt+bh+12);
+ if(D.trunc){g.fillStyle=css('--warn');g.textAlign='left';g.fillText('data loppui '+Math.round(D.t[K-1]*1000)+' ms:n jälkeen',padL,padT+10)}
+ cv._wf={X,pw,padL,f0,f1,D,F};
+}
+function t60Fit(t,L,floor){let im=0;for(let i=1;i<Math.min(5,L.length);i++)if(L[i]>L[im])im=i;const Lm=L[im],lim=Math.max(Lm-28,floor+10),pts=[];
+ for(let i=im;i<L.length;i++){if(L[i]<lim)break;if(L[i]<=Lm-3)pts.push([t[i],L[i]])}
+ if(pts.length<4)return null;const rngDb=pts[0][1]-pts[pts.length-1][1];if(rngDb<10)return null;
+ const n=pts.length,mx=pts.reduce((a,p)=>a+p[0],0)/n,my=pts.reduce((a,p)=>a+p[1],0)/n;let sxy=0,sxx=0;pts.forEach(p=>{sxy+=(p[0]-mx)*(p[1]-my);sxx+=(p[0]-mx)*(p[0]-mx)});
+ const sl=sxy/sxx;if(!(sl<0))return null;return{t60:-60/sl,db:rngDb}}
+function modeFreqs(){const out=[];
+ if(MEAS){const d=measDec(),sp=specOf(d.x,d.ip,d.fs,500,null),FF=[];for(let fr=Math.max(18,S.fMin||20);fr<=Math.min(400,S.fMax||250);fr*=Math.pow(2,1/48))FF.push(fr);
+  const v=FF.map(fr=>frAt(fr,sp,12));for(let i=8;i<v.length-8;i++){const nb=v.slice(i-8,i+9);if(v[i]===Math.max(...nb)&&v[i]-Math.min(...nb)>3)out.push({f:FF[i],src:'meas'})}}
+ (S.t60Extra||[]).forEach(fr=>{if(!out.some(o=>Math.abs(o.f/fr-1)<0.015))out.push({f:fr,src:'user'})});
+ return out.sort((a,b)=>a.f-b.f)}
+function t60Meas(freqs){if(!MEAS||!freqs.length)return[];const d=measDec(),key='t60|'+S.wavCh+'|'+freqs.map(x=>x.toFixed(2)).join(',');if(MEAS.cache[key])return MEAS.cache[key];
+ const sp=specOf(d.x,d.ip,d.fs,500,null),ff=freqs.map(fr=>{let bf=fr,bv=-1e9;for(let r=0.98;r<=1.0201;r+=0.0025){const v=frAt(fr*r,sp,48);if(v>bv){bv=v;bf=fr*r}}return bf});
+ const span=Math.min(1.5,(d.x.length-d.ip)/d.fs-0.5),L=slideLevels([d.x],d.ip,d.fs,null,ff,0.15,0.01,span,false);
+ const nSt=d.x.length-Math.round(0.3*d.fs),nsp=specOf(d.x,nSt,d.fs,150,null);
+ return MEAS.cache[key]=ff.map((fr,j)=>Object.assign({f:fr},t60Fit(L.t,L.v.map(r=>r[j]),frAt(fr,nsp,24))||{}))}
+function drawDecay(){
+ drawDecayCurves();
+ const F=csdF(),M=normCSD(csdMeasData(F),F);
+ document.getElementById('csdT').textContent=MEAS?'Mitattu – '+MEAS.name:'Mitattu';
+ const all=M&&M.v.length?M.v.flat().filter(isFinite):[];
+ const hi=all.length?Math.ceil((Math.max(...all)+2)/5)*5:10,lo=hi-Math.max(15,S.csdRange||40);
+ drawWaterfall('csdMeas',M,F,hi,lo,'Tuo mittaus (WAV) Vaste-välilehdellä.');
+ const cv=document.getElementById('csdMeas');cv.style.cursor='crosshair';
+ const fAt=e=>{const w=cv._wf;if(!w)return null;const rc=cv.getBoundingClientRect(),u=(e.clientX-rc.left-w.padL)/w.pw;if(u<0||u>1)return null;return w.f0*Math.pow(w.f1/w.f0,u)};
+ cv.onmousemove=e=>{const fr=fAt(e);if(!fr||!M)return;let i=0,bd=1e9;F.forEach((v,k)=>{const d=Math.abs(Math.log(v/fr));if(d<bd){bd=d;i=k}});
+  const ks=[0,1,2,3,4,5,6,7].map(j=>Math.round(j*(M.v.length-1)/7)).filter((v,j,a)=>a.indexOf(v)===j);
+  document.getElementById('csdRead').innerHTML=`<b>${f(F[i],1)} Hz</b>: `+ks.map(k=>`${Math.round(M.t[k]*1000)} ms ${f(M.v[k][i],1)} dB`).join(' · ')};
+ cv.onclick=e=>{const fr=fAt(e);if(!fr)return;S.t60Extra=(S.t60Extra||[]).concat([Math.round(fr*2)/2]).slice(-8);save();drawDecay()};
+ const modes=modeFreqs(),tm=t60Meas(modes.map(m=>m.f));
+ document.getElementById('t60Head').innerHTML='<tr><th class="l">Taajuus (Hz)</th><th>T60 (s)</th><th>Alue (dB)</th><th></th></tr>';
+ document.getElementById('t60Rows').innerHTML=modes.length?modes.map((m,j)=>{const a=tm[j];
+  return`<tr><td class="l"><b>${f(a?a.f:m.f,1)}</b>${m.src==='user'?' <span class="hint" style="margin:0">(valittu)</span>':''}</td><td><b>${a&&a.t60?f(a.t60,2):'–'}</b></td><td>${a&&a.db?f(a.db,0):'–'}</td><td>${m.src==='user'?`<button data-rm="${m.f}" style="padding:1px 7px">×</button>`:''}</td></tr>`}).join('')
+  :`<tr><td colspan="4" class="l" style="color:var(--muted)">${MEAS?'Resonanssihuippuja ei löytynyt valitulta taajuusalueelta.':'Tuo mittaus (WAV) Vaste-välilehdellä.'}</td></tr>`;
+ drawWavelet();
+ renderSTI();
+ document.querySelectorAll('#t60Rows [data-rm]').forEach(b=>b.onclick=()=>{const v=+b.dataset.rm;S.t60Extra=(S.t60Extra||[]).filter(x=>Math.abs(x-v)>1e-6);save();drawDecay()});
+}
+
+
+
+// ================= full-band spectral decay curves =================
+function dcData(F){if(!MEAS)return null;const st=Math.max(1,S.dcStep||50)/1000,nC=Math.max(2,Math.min(12,Math.round(S.dcN||7))),win=Math.max(20,S.dcWin||300),sm=+S.dcSm||6;
+ const key='dc'+S.wavCh+'|'+st+'|'+nC+'|'+win+'|'+sm+'|'+F.length;if(MEAS.cache[key])return MEAS.cache[key];
+ const{x,ip,fs}=measIR(),W=Math.round(win/1000*fs),out={t:[],v:[]};
+ for(let k=0;k<nC;k++){const s0=ip+Math.round(k*st*fs);if(s0+W>x.length)break;const sp=specOf(x,s0,fs,win,null);out.t.push(k*st);out.v.push(F.map(fr=>frAt(fr,sp,sm)))}
+ if(out.v.length){const sel=out.v[0].filter((x,i)=>F[i]>=100&&F[i]<=10000).sort((a,b)=>a-b),r=sel[sel.length>>1];out.v=out.v.map(row=>row.map(v=>v-r))}
+ return MEAS.cache[key]=out}
+function drawDecayCurves(){const cv=document.getElementById('dcCv');if(!cv)return;const H=380,{g,cw}=setupCanvas(cv,H),padL=42,padR=12,padT=12,padB=34,pw=cw-padL-padR,ph=H-padT-padB;
+ const muted=css('--muted'),line=css('--line'),text=css('--text');
+ const fsN=MEAS?MEAS.sr/2:24000,f0=20,f1=Math.min(20000,fsN*0.95),F=[];for(let i=0;i<500;i++)F.push(f0*Math.pow(f1/f0,i/499));
+ const D=dcData(F);
+ const hi=D&&D.v.length?Math.ceil((Math.max(...D.v[0].filter(isFinite))+3)/5)*5:10,lo=hi-Math.max(20,S.dcRange||50);
+ const X=fr=>padL+Math.log(fr/f0)/Math.log(f1/f0)*pw,Y=v=>padT+(hi-v)/(hi-lo)*ph;
+ g.font='10px system-ui,sans-serif';g.strokeStyle=line;g.lineWidth=1;g.fillStyle=muted;
+ [20,30,50,100,200,300,500,1000,2000,3000,5000,10000,20000].filter(v=>v>=f0&&v<=f1).forEach(v=>{g.beginPath();g.moveTo(X(v),padT);g.lineTo(X(v),padT+ph);g.stroke();g.textAlign='center';g.fillText(v>=1000?v/1000+'k':v,X(v),padT+ph+13)});
+ for(let v=Math.ceil(lo/10)*10;v<=hi;v+=10){g.beginPath();g.moveTo(padL,Y(v));g.lineTo(padL+pw,Y(v));g.stroke();g.textAlign='right';g.fillText((v>0?'+':'')+String(v).replace('-','−'),padL-5,Y(v)+3)}
+ g.textAlign='right';g.fillText('Hz',padL+pw,padT+ph+26);
+ if(!D||!D.v.length){g.fillStyle=muted;g.textAlign='center';g.font='13px system-ui,sans-serif';g.fillText('Tuo mittaus (WAV) Vaste-välilehdellä.',padL+pw/2,padT+ph/2);return}
+ const K=D.v.length,colOf=k=>{const c=cmap(0.9-0.58*(K>1?k/(K-1):0));return`rgb(${c[0]},${c[1]},${c[2]})`};
+ g.save();g.beginPath();g.rect(padL,padT,pw,ph);g.clip();
+ for(let k=K-1;k>=0;k--){g.strokeStyle=k===0?text:colOf(k);g.lineWidth=k===0?2:1.6;g.beginPath();D.v[k].forEach((v,i)=>{const y=Y(Math.max(lo-5,v));i?g.lineTo(X(F[i]),y):g.moveTo(X(F[i]),y)});g.stroke()}
+ g.restore();
+ g.font='11px system-ui,sans-serif';g.textAlign='left';{const items=D.t.map((t,k)=>({nm:Math.round(t*1000)+' ms',k})),tw=items.reduce((a,it)=>a+g.measureText(it.nm).width+30,0);let lx=padL+pw-tw-4;const ly=padT+12;
+ items.forEach(it=>{g.fillStyle=it.k===0?text:colOf(it.k);g.fillRect(lx,ly-5,14,3);g.fillStyle=text;g.fillText(it.nm,lx+18,ly);lx+=g.measureText(it.nm).width+30})}
+ cv.style.cursor='crosshair';
+ cv.onmousemove=e=>{const rc=cv.getBoundingClientRect(),u=(e.clientX-rc.left-padL)/pw;if(u<0||u>1)return;const fr=f0*Math.pow(f1/f0,u);let i=0,bd=1e9;F.forEach((v,k)=>{const d=Math.abs(Math.log(v/fr));if(d<bd){bd=d;i=k}});
+  document.getElementById('dcRead').innerHTML=`<b>${F[i]>=1000?f(F[i]/1000,2)+' kHz':f(F[i],1)+' Hz'}</b>: `+D.t.map((t,k)=>`${Math.round(t*1000)} ms ${f(D.v[k][i],1)} dB`).join(' · ')}}
+
+// ================= wavelet spectrogram (Morlet) of the measured IR =================
+function waveletData(F){if(!MEAS)return null;const nc=+S.wavCyc||7,span=Math.min(1,Math.max(0.05,(S.wavSpan||300)/1000));
+ const key='wav'+S.wavCh+'|'+nc+'|'+span+'|'+F[0].toFixed(2)+'|'+F[F.length-1].toFixed(2)+'|'+F.length;if(MEAS.cache[key])return MEAS.cache[key];
+ const d=measDec(),x=d.x,fs=d.fs,ip=d.ip,pre=0.02,dT=span/300,T=[];for(let t=-pre;t<=span+1e-9;t+=dT)T.push(t);
+ const nT=T.length,V=new Float32Array(F.length*nT);
+ F.forEach((fr,fi)=>{const sg=nc/(2*Math.PI*fr),half=Math.ceil(3*sg*fs),kr=new Float64Array(2*half+1),ki=new Float64Array(2*half+1);let nm=0;
+  for(let k=-half;k<=half;k++){const t=k/fs,g=Math.exp(-t*t/(2*sg*sg));kr[k+half]=g*Math.cos(2*Math.PI*fr*t);ki[k+half]=g*Math.sin(2*Math.PI*fr*t);nm+=g}
+  for(let ti=0;ti<nT;ti++){const c=ip+Math.round(T[ti]*fs);let re=0,im=0;const a=Math.max(-half,-c),b=Math.min(half,x.length-1-c);
+   for(let k=a;k<=b;k++){const v=x[c+k];re+=v*kr[k+half];im+=v*ki[k+half]}
+   V[fi*nT+ti]=10*Math.log10((re*re+im*im)/(nm*nm)+1e-30)}});
+ return MEAS.cache[key]={T,V,F,nc}}
+const INFERNO=[[0,[0,0,4]],[0.2,[40,11,84]],[0.4,[101,21,110]],[0.6,[188,55,84]],[0.8,[249,142,9]],[1,[252,255,164]]];
+function cmap(t){t=Math.max(0,Math.min(1,t));for(let i=1;i<INFERNO.length;i++)if(t<=INFERNO[i][0]){const[a,ca]=INFERNO[i-1],[b,cb]=INFERNO[i],u=(t-a)/(b-a);return ca.map((v,k)=>Math.round(v+(cb[k]-v)*u))}return INFERNO[INFERNO.length-1][1]}
+function drawWavelet(){const cv=document.getElementById('wavCv');if(!cv)return;const H=360,{g,cw}=setupCanvas(cv,H),padL=42,padR=64,padT=10,padB=32,pw=cw-padL-padR,ph=H-padT-padB;
+ const text=css('--text'),muted=css('--muted'),line=css('--line');
+ const f0=Math.max(15,S.fMin||20),f1=Math.max(f0*1.5,Math.min(S.fMax||250,600)),nF=Math.max(20,Math.ceil(Math.log2(f1/f0)*24)+1),F=[];for(let i=0;i<nF;i++)F.push(f0*Math.pow(f1/f0,i/(nF-1)));
+ const D=waveletData(F);
+ if(!D){g.fillStyle=muted;g.textAlign='center';g.font='13px system-ui,sans-serif';g.fillText('Tuo mittaus (WAV) Vaste-välilehdellä.',padL+pw/2,padT+ph/2);cv._wv=null;return}
+ const nT=D.T.length,rng=Math.max(15,S.wavRange||40),norm=!!S.wavNorm;
+ let gmax=-1e9;for(let i=0;i<D.V.length;i++)if(D.V[i]>gmax)gmax=D.V[i];
+ const rowMax=F.map((_,fi)=>{let m=-1e9;for(let ti=0;ti<nT;ti++)m=Math.max(m,D.V[fi*nT+ti]);return m});
+ const off=document.createElement('canvas');off.width=nT;off.height=nF;const og=off.getContext('2d'),im=og.createImageData(nT,nF);
+ for(let fi=0;fi<nF;fi++)for(let ti=0;ti<nT;ti++){const v=D.V[fi*nT+ti]-(norm?rowMax[fi]:gmax),c=cmap(1+v/rng),o=((nF-1-fi)*nT+ti)*4;im.data[o]=c[0];im.data[o+1]=c[1];im.data[o+2]=c[2];im.data[o+3]=255}
+ og.putImageData(im,0,0);g.imageSmoothingEnabled=true;g.drawImage(off,padL,padT,pw,ph);
+ const t0=D.T[0],t1=D.T[nT-1],X=t=>padL+(t-t0)/(t1-t0)*pw,Y=fr=>padT+(1-Math.log(fr/f0)/Math.log(f1/f0))*ph;
+ // axes
+ g.font='10px system-ui,sans-serif';g.fillStyle=muted;g.strokeStyle=line;g.lineWidth=1;
+ const tst=t1>0.6?0.1:t1>0.25?0.05:0.025;for(let t=0;t<=t1+1e-9;t+=tst){g.beginPath();g.moveTo(X(t),padT+ph);g.lineTo(X(t),padT+ph+4);g.stroke();g.textAlign='center';g.fillText(Math.round(t*1000),X(t),padT+ph+14)}
+ g.textAlign='right';g.fillText('ms',padL+pw,padT+ph+27);
+ [20,30,40,50,60,80,100,150,200,300,400,500].filter(v=>v>=f0&&v<=f1).forEach(v=>{g.beginPath();g.moveTo(padL-4,Y(v));g.lineTo(padL,Y(v));g.stroke();g.fillText(v,padL-6,Y(v)+3)});
+ g.save();g.translate(10,padT+ph/2);g.rotate(-Math.PI/2);g.textAlign='center';g.fillText('Hz',0,0);g.restore();
+ // direct-sound marker and resolution limit
+ g.strokeStyle='rgba(255,255,255,.7)';g.setLineDash([4,4]);g.beginPath();g.moveTo(X(0),padT);g.lineTo(X(0),padT+ph);g.stroke();
+ g.beginPath();F.forEach((fr,i)=>{const t=D.nc/(Math.PI*fr);const xx=X(Math.min(t1,t)),yy=Y(fr);i?g.lineTo(xx,yy):g.moveTo(xx,yy)});g.stroke();g.setLineDash([]);
+ // peak-energy time per frequency (as in REW)
+ const pkT=F.map((_,fi)=>{let m=-1e9,ti0=0;for(let ti=0;ti<nT;ti++){const v=D.V[fi*nT+ti];if(v>m){m=v;ti0=ti}}
+  // parabolic refinement
+  if(ti0>0&&ti0<nT-1){const a=D.V[fi*nT+ti0-1],b=D.V[fi*nT+ti0],c=D.V[fi*nT+ti0+1],d=a-2*b+c;if(d<0){const o=0.5*(a-c)/d;return D.T[ti0]+o*(D.T[1]-D.T[0])}}return D.T[ti0]});
+ if(S.wavPk!==false){g.save();g.beginPath();g.rect(padL,padT,pw,ph);g.clip();
+  const path=()=>{g.beginPath();F.forEach((fr,i)=>{const xx=X(pkT[i]),yy=Y(fr);i?g.lineTo(xx,yy):g.moveTo(xx,yy)})};
+  g.strokeStyle='rgba(0,0,0,.7)';g.lineWidth=3.5;path();g.stroke();g.strokeStyle='#ffffff';g.lineWidth=1.6;path();g.stroke();g.restore();
+  g.fillStyle='#fff';g.font='10px system-ui,sans-serif';g.textAlign='left';g.fillText('huippuenergian ajankohta',X(Math.min(t1*0.6,pkT[pkT.length-1]))+6,padT+12)}
+ g.strokeStyle=text;g.lineWidth=1;g.strokeRect(padL,padT,pw,ph);
+ // colour bar
+ const bx=padL+pw+14,bw=12;for(let i=0;i<ph;i++){const c=cmap(1-i/ph);g.fillStyle=`rgb(${c[0]},${c[1]},${c[2]})`;g.fillRect(bx,padT+i,bw,1.5)}
+ g.fillStyle=muted;g.textAlign='left';for(let v=0;v>=-rng;v-=10){const yy=padT+(-v/rng)*ph;g.fillText((v===0?'0':v.toString().replace('-','−')),bx+bw+4,yy+3)}
+ g.fillText('dB',bx,padT+ph+14);
+ cv._wv={X,Y,t0,t1,f0,f1,padL,padT,pw,ph,D,rowMax,gmax,norm,pkT};cv.style.cursor='crosshair';
+ const at=e=>{const w=cv._wv,rc=cv.getBoundingClientRect(),u=(e.clientX-rc.left-w.padL)/w.pw,v=(e.clientY-rc.top-w.padT)/w.ph;if(u<0||u>1||v<0||v>1)return null;
+  return{t:w.t0+u*(w.t1-w.t0),fr:w.f0*Math.pow(w.f1/w.f0,1-v)}};
+ cv.onmousemove=e=>{const p=at(e);if(!p)return;const w=cv._wv,fi=Math.round(Math.log(p.fr/w.f0)/Math.log(w.f1/w.f0)*(nF-1)),ti=Math.round((p.t-w.t0)/(w.t1-w.t0)*(nT-1));
+  const v=D.V[fi*nT+ti]-(w.norm?w.rowMax[fi]:w.gmax),res=D.nc/(Math.PI*F[fi])*1000;
+  document.getElementById('wavRead').innerHTML=`<b>${f(F[fi],1)} Hz · ${f(D.T[ti]*1000,0)} ms</b>: ${f(v,1)} dB ${w.norm?'taajuuden huipusta':'kuvan huipusta'} · huippuenergia ${f(w.pkT[fi]*1000,1)} ms · aikaerottelu tällä taajuudella noin ${f(res,0)} ms`};
+ cv.onclick=e=>{const p=at(e);if(!p)return;S.evoF=Math.round(p.fr*2)/2;S.mapF=S.evoF;save();document.getElementById('wavRead').innerHTML+=` · <b>valittu ${f(S.evoF,1)} Hz</b> tason kehittyminen -kuvaajaan`}}
+
+// ================= octave bands & STI from the measured IR =================
+const OCT=[63,125,250,500,1000,2000,4000,8000],STI_A=[0.085,0.127,0.230,0.233,0.309,0.224,0.173],STI_B=[0.085,0.078,0.065,0.011,0.047,0.095],STI_AF=[0,0.117,0.223,0.216,0.328,0.250,0.194],STI_BF=[0,0.099,0.066,0.062,0.025,0.076];
+const STI_F=[0.63,0.8,1,1.25,1.6,2,2.5,3.15,4,5,6.3,8,10,12.5];
+function octAnalysis(){if(!MEAS)return null;const key='oct'+S.wavCh;if(MEAS.cache[key])return MEAS.cache[key];
+ const{x,ip,fs}=measIR(),pre=Math.round(0.002*fs),st=Math.max(0,ip-pre),L=x.length-st;if(L<fs*0.3)return MEAS.cache[key]={err:'Impulssivaste on liian lyhyt (alle 0,3 s).'};
+ const N=2*nextPow2(L),re=new Float64Array(N),im=new Float64Array(N);for(let i=0;i<L;i++)re[i]=x[st+i];fft(re,im,false);
+ const d0=ip-st,out=[];
+ OCT.forEach(fc=>{if(fc*Math.SQRT2>fs/2){out.push({fc,err:true});return}
+  const br=new Float64Array(N),bi=new Float64Array(N),e=1/6;
+  for(let k=1;k<N/2;k++){const fr=k*fs/N,u=Math.abs(Math.log2(fr/fc));let w=u<0.5-e?1:u>0.5+e?0:0.5+0.5*Math.cos(Math.PI*(u-0.5+e)/(2*e));if(w){br[k]=re[k]*w;bi[k]=im[k]*w;br[N-k]=re[N-k]*w;bi[N-k]=im[N-k]*w}}
+  fft(br,bi,true);
+  const en=new Float64Array(L);for(let i=0;i<L;i++)en[i]=br[i]*br[i];
+  // noise from the last 15 %, truncation where a 20 ms moving average first falls to 2 × noise after the peak
+  const t0n=Math.floor(L*0.85);let nz=0;for(let i=t0n;i<L;i++)nz+=en[i];nz/=(L-t0n);
+  let pk=0;for(let i=0;i<Math.min(L,d0+Math.round(0.03*fs));i++)if(en[i]>en[pk])pk=i;
+  const W=Math.max(1,Math.round(0.02*fs));let acc=0,end=t0n;
+  for(let i=pk;i<t0n;i++){acc+=en[i];if(i-pk>=W)acc-=en[i-W];if(i-pk>=W&&acc/W<=2*nz){end=i;break}}
+  const ee=new Float64Array(end);let tot=0;for(let i=0;i<end;i++){ee[i]=Math.max(0,en[i]-nz);tot+=ee[i]}
+  const peakSm=(()=>{let a=0,m=0;for(let i=0;i<Math.min(end,pk+W*3);i++){a+=en[i];if(i>=W)a-=en[i-W];m=Math.max(m,a/W)}return m})();
+  const dyn=nz>0?10*Math.log10(peakSm/nz):99;
+  // Schroeder decay
+  const sch=new Float64Array(end);let c=0;for(let i=end-1;i>=0;i--){c+=ee[i];sch[i]=c}
+  const db=i=>10*Math.log10(sch[i]/sch[0]+1e-30),fit=(a,b)=>{let i0=-1,i1=-1;for(let i=pk;i<end;i++){const v=db(i);if(i0<0&&v<=a)i0=i;if(v<=b){i1=i;break}}if(i0<0||i1<0||i1-i0<4)return null;
+   let n=0,sx=0,sy=0,sxx=0,sxy=0;const stp=Math.max(1,Math.floor((i1-i0)/400));for(let i=i0;i<=i1;i+=stp){const t=i/fs,v=db(i);n++;sx+=t;sy+=v;sxx+=t*t;sxy+=t*v}const sl=(n*sxy-sx*sy)/(n*sxx-sx*sx);return sl<0?-60/sl:null};
+  const r={fc,dyn,EDT:fit(0,-10),T20:dyn>=25?fit(-5,-25):null,T30:dyn>=35?fit(-5,-35):null};
+  const iD=Math.max(0,pk-Math.round(0.001*fs)),i50=Math.min(end,iD+Math.round(0.05*fs)),i80=Math.min(end,iD+Math.round(0.08*fs));let e50=0,e80=0,eAll=0;
+  for(let i=0;i<end;i++){if(i<i50)e50+=ee[i];if(i<i80)e80+=ee[i];eAll+=ee[i]}
+  r.C50=10*Math.log10(e50/Math.max(1e-30,eAll-e50));r.C80=10*Math.log10(e80/Math.max(1e-30,eAll-e80));
+  if(fc>=125){const ti=STI_F.map(F=>{const w=2*Math.PI*F/fs;let a=0,b=0;for(let i=0;i<end;i++){a+=ee[i]*Math.cos(w*i);b+=ee[i]*Math.sin(w*i)}
+    const m=Math.min(0.9999,Math.hypot(a,b)/tot),snr=Math.max(-15,Math.min(15,10*Math.log10(m/(1-m))));return(snr+15)/30});
+   r.MTI=ti.reduce((u,v)=>u+v,0)/ti.length}
+  out.push(r)});
+ const mt=OCT.slice(1).map(fc=>{const r=out.find(o=>o.fc===fc);return r&&r.MTI!=null?r.MTI:null});
+ const calc=(A,B)=>{let v=0;mt.forEach((m,k)=>v+=A[k]*m);for(let k=0;k<6;k++)v-=B[k]*Math.sqrt(mt[k]*mt[k+1]);return Math.max(0,Math.min(1,v))};
+ const ok=mt.every(v=>v!==null);
+ return MEAS.cache[key]={bands:out,sti:ok?calc(STI_A,STI_B):null,stiF:ok?calc(STI_AF,STI_BF):null}}
+function stiClass(v){const C=[[0.76,'A+'],[0.72,'A'],[0.68,'B'],[0.64,'C'],[0.60,'D'],[0.56,'E'],[0.52,'F'],[0.48,'G'],[0.44,'H'],[0.40,'I'],[0.36,'J']];for(const[t,c]of C)if(v>=t)return c;return'U'}
+function stiWord(v){return v>=0.75?'erinomainen':v>=0.6?'hyvä':v>=0.45?'kohtalainen':v>=0.3?'heikko':'huono'}
+function renderSTI(){const box=document.getElementById('stiBox'),tb=document.getElementById('octRows');if(!box)return;
+ if(!MEAS){box.innerHTML='<span class="hint" style="margin:0">Tuo mittaus (WAV) Vaste-välilehdellä.</span>';tb.innerHTML='';return}
+ const A=octAnalysis();if(A.err){box.textContent=A.err;tb.innerHTML='';return}
+ box.innerHTML=A.sti!==null?`<b style="font-size:20px">STI ${f(A.sti,2)}</b> miespuhe · luokka <b>${stiClass(A.sti)}</b> · ${stiWord(A.sti)} &nbsp;&nbsp; <b style="font-size:16px">${f(A.stiF,2)}</b> naispuhe · luokka <b>${stiClass(A.stiF)}</b><br><span class="hint" style="margin:0">${esc(MEAS.name)} · IEC 60268-16 · ilman taustamelua ja peittovaikutusta</span>`:'STI:tä ei voitu laskea (näytteenottotaajuus liian pieni 8 kHz:n kaistalle).';
+ tb.innerHTML=A.bands.map(r=>r.err?`<tr><td class="l">${r.fc}</td><td colspan="7" class="l" style="color:var(--muted)">yli Nyquistin taajuuden</td></tr>`:
+  `<tr><td class="l"><b>${r.fc>=1000?r.fc/1000+' k':r.fc}</b></td><td>${f(r.EDT,2)}</td><td>${f(r.T20,2)}</td><td>${f(r.T30,2)}</td><td>${f(r.C50,1)}</td><td>${f(r.C80,1)}</td><td>${r.MTI!=null?f(r.MTI,2):'–'}</td><td>${r.dyn>=99?'–':f(r.dyn,0)}</td></tr>`).join('')}
+
+
+// ================= direct vs reflected sound (measured) =================
+function segSpec(x,a,b,fs,tin,tout){a=Math.max(0,a);b=Math.min(x.length,b);const L=b-a,N=nextPow2(Math.max(L,fs)),re=new Float64Array(N),im=new Float64Array(N),ni=Math.max(1,Math.round(tin*fs)),no=Math.max(1,Math.round(tout*fs));
+ for(let i=0;i<L;i++){let w=1;if(i<ni)w=0.5-0.5*Math.cos(Math.PI*i/ni);const e=L-1-i;if(e<no)w*=0.5-0.5*Math.cos(Math.PI*e/no);re[i]=x[a+i]*w}
+ fft(re,im,false);const M=N/2+1,cum=new Float64Array(M+1),df=fs/N;for(let k=0;k<M;k++)cum[k+1]=cum[k]+re[k]*re[k]+im[k]*im[k];return{cum,df,M,fs}}
+function drData(){if(!MEAS)return null;const el=S.drMode==='el';
+ const T=el?Math.max(2,Math.min(80,+S.elT||20))/1000:Math.max(0.5,Math.min(20,+S.drT||3))/1000,W=el?Math.max(100,+S.elW||800)/1000:Math.max(20,+S.drW||300)/1000,key='dr'+S.wavCh+'|'+el+'|'+T+'|'+W;if(MEAS.cache[key])return MEAS.cache[key];
+ const{x,ip,fs}=measIR(),pre=Math.round(0.0005*fs),cut=ip+Math.round(T*fs),tp=Math.max(1,Math.round(0.0003*fs)),endT=Math.min(0.05,W*0.2);
+ const dS=segSpec(x,ip-pre,cut+tp,fs,0.0004,0.0003*2),rS=segSpec(x,cut-tp,cut+Math.round(W*fs),fs,0.0003*2,endT),fS=el?segSpec(x,ip-pre,cut+Math.round(W*fs),fs,0.0004,endT):null;
+ // broadband ETC
+ const t1=el?Math.max(30,T*1000+10):30,n0=Math.max(0,ip-Math.round(0.001*fs)),n1=Math.min(x.length,ip+Math.round(t1/1000*fs)),av=Math.max(1,Math.round(0.00015*fs)),etc=[];let pk=0;
+ for(let i=n0;i<n1;i++){let a=0;for(let k=-av;k<=av;k++){const j=i+k;if(j>=0&&j<x.length)a+=x[j]*x[j]}etc.push(a);if(a>pk)pk=a}
+ return MEAS.cache[key]={el,dS,rS,fS,T,W,fs,t1,etc:etc.map(v=>10*Math.log10(v/pk+1e-12)),et0:(n0-ip)/fs}}
+function drawDR(){const cE=document.getElementById('drEtc');if(!cE)return;const EL=S.drMode==='el';document.querySelectorAll('.drOnly').forEach(e=>e.style.display=EL?'none':'');document.querySelectorAll('.elOnly').forEach(e=>e.style.display=EL?'':'none');
+ document.getElementById('drEtcT').textContent=EL?'Alku ETC:stä: varhaisen äänen raja ja lasketut 1. kertaluvun heijastukset (yllä valittu kaiutin)':'Alku ETC:stä: suoran äänen ikkuna ja lasketut 1. kertaluvun heijastukset (yllä valittu kaiutin)';const muted=css('--muted'),line=css('--line'),text=css('--text'),acc=css('--accent'),warn=css('--warn');
+ const D=drData();
+ // --- ETC strip
+ {const H=150,{g,cw}=setupCanvas(cE,H),pL=42,pR=12,pT=8,pB=26,pw=cw-pL-pR,ph=H-pT-pB,t0=-1,t1=D?D.t1:30,lo=-40;const X=t=>pL+(t-t0)/(t1-t0)*pw,Y=v=>pT+(0-Math.max(lo,v))/(-lo)*ph;
+  g.font='10px system-ui,sans-serif';g.strokeStyle=line;g.fillStyle=muted;g.lineWidth=1;
+  for(let t=0;t<=t1;t+=(t1>40?10:5)){g.beginPath();g.moveTo(X(t),pT);g.lineTo(X(t),pT+ph);g.stroke();g.textAlign='center';g.fillText(t,X(t),pT+ph+12)}g.textAlign='right';g.fillText('ms',pL+pw,pT+ph+23);
+  for(let v=0;v>=lo;v-=10){g.beginPath();g.moveTo(pL,Y(v));g.lineTo(pL+pw,Y(v));g.stroke();g.fillText(v,pL-5,Y(v)+3)}
+  if(D){const Tm=D.T*1000;g.fillStyle=acc;g.globalAlpha=.12;g.fillRect(X(0),pT,X(Tm)-X(0),ph);g.globalAlpha=1;
+   const si=Math.min(S.speakers.length-1,+S.etcSpk||0);const R=reflections(S,si,false,t1).rows;g.strokeStyle=warn;g.setLineDash([3,3]);
+   R.forEach(r=>{g.beginPath();g.moveTo(X(r.delay),pT);g.lineTo(X(r.delay),pT+ph);g.stroke()});g.setLineDash([]);
+   g.fillStyle=warn;g.textAlign='left';R.slice(0,6).forEach((r,i)=>g.fillText(r.name,X(r.delay)+3,pT+10+(i%3)*11));
+   g.strokeStyle=text;g.lineWidth=1.3;g.beginPath();D.etc.forEach((v,i)=>{const t=(D.et0+i/D.fs)*1000;i?g.lineTo(X(t),Y(v)):g.moveTo(X(t),Y(v))});g.stroke();
+   g.strokeStyle=acc;g.lineWidth=2;g.beginPath();g.moveTo(X(Tm),pT);g.lineTo(X(Tm),pT+ph);g.stroke();g.fillStyle=acc;g.textAlign='left';g.fillText((D.el?'varhainen ääni ':'suora ääni ')+f(Tm,1)+' ms',X(Tm)+4,pT+ph-6)}
+  else{g.fillStyle=muted;g.textAlign='center';g.font='13px system-ui,sans-serif';g.fillText('Tuo mittaus (WAV) Vaste-välilehdellä.',pL+pw/2,pT+ph/2)}}
+ // --- FR curves
+ const cv=document.getElementById('drCv'),H=340,{g,cw}=setupCanvas(cv,H),padL=42,padR=12,padT=12,padB=34,pw=cw-padL-padR,ph=H-padT-padB;
+ const f0=20,f1=Math.min(20000,(MEAS?MEAS.sr/2:24000)*0.95),F=[];for(let i=0;i<500;i++)F.push(f0*Math.pow(f1/f0,i/499));
+ if(!D){g.fillStyle=muted;g.textAlign='center';g.font='13px system-ui,sans-serif';g.fillText('Tuo mittaus (WAV) Vaste-välilehdellä.',padL+pw/2,padT+ph/2);setupCanvas(document.getElementById('drBar'),10);return}
+ const sm=+S.drSm||6,vd=F.map(fr=>frAt(fr,D.dS,sm)),vr=F.map(fr=>frAt(fr,D.rS,sm)),vf=D.el?F.map(fr=>frAt(fr,D.fS,sm)):null;
+ const refC=D.el?vf:vd,sel=refC.filter((v,i)=>F[i]>=500&&F[i]<=5000).sort((a,b)=>a-b),r0=sel[sel.length>>1];const A=vd.map(v=>v-r0),B=vr.map(v=>v-r0),Cf=D.el?vf.map(v=>v-r0):null;
+ const all=A.concat(B,Cf||[]).filter(isFinite),hi=Math.ceil((Math.max(...all)+3)/5)*5,lo=Math.max(Math.floor((Math.min(...all)-3)/5)*5,hi-60);
+ const X=fr=>padL+Math.log(fr/f0)/Math.log(f1/f0)*pw,Y=v=>padT+(hi-v)/(hi-lo)*ph,fLim=1.5/D.T;
+ g.font='10px system-ui,sans-serif';g.strokeStyle=line;g.lineWidth=1;g.fillStyle=muted;
+ [20,30,50,100,200,300,500,1000,2000,3000,5000,10000,20000].filter(v=>v>=f0&&v<=f1).forEach(v=>{g.beginPath();g.moveTo(X(v),padT);g.lineTo(X(v),padT+ph);g.stroke();g.textAlign='center';g.fillText(v>=1000?v/1000+'k':v,X(v),padT+ph+13)});
+ for(let v=Math.ceil(lo/10)*10;v<=hi;v+=10){g.beginPath();g.moveTo(padL,Y(v));g.lineTo(padL+pw,Y(v));g.stroke();g.textAlign='right';g.fillText((v>0?'+':'')+String(v).replace('-','−'),padL-5,Y(v)+3)}
+ g.textAlign='right';g.fillText('Hz',padL+pw,padT+ph+26);
+ if(fLim>f0){g.fillStyle=line;g.globalAlpha=.4;g.fillRect(padL,padT,X(Math.min(f1,fLim))-padL,ph);g.globalAlpha=1;g.fillStyle=muted;g.textAlign='left';g.fillText(D.el?'varhaisen ikkuna liian lyhyt erottelemaan':'suoran äänen ikkuna liian lyhyt',padL+4,padT+12)}
+ const ser=D.el?[{name:'Koko',v:Cf,col:text,w:2.2},{name:'Varhainen (0–'+f(D.T*1000,0)+' ms)',v:A,col:acc,w:1.8},{name:'Myöhäinen ('+f(D.T*1000,0)+' ms →)',v:B,col:css('--warn'),w:1.8}]
+  :[{name:'Suora ääni (0–'+f(D.T*1000,1)+' ms)',v:A,col:text,w:2},{name:'Heijastunut ääni ('+f(D.T*1000,1)+'–'+f((D.T+D.W)*1000,0)+' ms)',v:B,col:css('--warn'),w:1.8}];
+ g.save();g.beginPath();g.rect(padL,padT,pw,ph);g.clip();ser.forEach(s=>{g.strokeStyle=s.col;g.lineWidth=s.w;g.beginPath();s.v.forEach((v,i)=>i?g.lineTo(X(F[i]),Y(v)):g.moveTo(X(F[i]),Y(v)));g.stroke()});g.restore();
+ let lx=padL+8;const ly=padT+ph-9;g.font='11px system-ui,sans-serif';g.textAlign='left';ser.forEach(s=>{g.fillStyle=s.col;g.fillRect(lx,ly-5,14,3);g.fillStyle=text;g.fillText(s.name,lx+18,ly);lx+=g.measureText(s.name).width+36});
+ cv.style.cursor='crosshair';cv.onmousemove=e=>{const rc=cv.getBoundingClientRect(),u=(e.clientX-rc.left-padL)/pw;if(u<0||u>1)return;const fr=f0*Math.pow(f1/f0,u);let i=0,bd=1e9;F.forEach((v,k)=>{const d=Math.abs(Math.log(v/fr));if(d<bd){bd=d;i=k}});
+  const fh=`<b>${F[i]>=1000?f(F[i]/1000,2)+' kHz':f(F[i],1)+' Hz'}</b>: `,lw=F[i]<fLim?' (ikkuna liian lyhyt tälle taajuudelle)':'';
+  document.getElementById('drRead').innerHTML=D.el?fh+`koko ${f(Cf[i],1)} dB · varhainen ${f(A[i],1)} dB · myöhäinen ${f(B[i],1)} dB · myöhäinen − koko ${f(B[i]-Cf[i],1)} dB`+lw:fh+`suora ${f(A[i],1)} dB · heijastunut ${f(B[i],1)} dB · D/R ${f(A[i]-B[i],1)} dB`+lw};
+ // --- D/R bars per 1/3 octave
+ const cb=document.getElementById('drBar'),Hb=220,bb=setupCanvas(cb,Hb),gb=bb.g,bw0=bb.cw,pL=42,pR=12,pT=10,pB=30,pwb=bw0-pL-pR,phb=Hb-pT-pB;
+ const NOM=[20,25,31.5,40,50,63,80,100,125,160,200,250,315,400,500,630,800,1000,1250,1600,2000,2500,3150,4000,5000,6300,8000,10000,12500,16000],cf=[],cfN=[];for(let k=-17;k<=12;k++){const c=1000*Math.pow(2,k/3);if(c>=19&&c<=Math.min(16500,f1/1.12)){cf.push(c);cfN.push(NOM[k+17])}}
+ const band=(sp,c)=>{const a=Math.floor(c/Math.pow(2,1/6)/sp.df),b=Math.min(sp.M-1,Math.ceil(c*Math.pow(2,1/6)/sp.df));return sp.cum[b+1]-sp.cum[a]};
+ const dr=D.el?cf.map(c=>10*Math.log10(band(D.rS,c)/Math.max(1e-30,band(D.fS,c)))):cf.map(c=>10*Math.log10(band(D.dS,c)/Math.max(1e-30,band(D.rS,c))));const mx=Math.max(10,Math.ceil(Math.max(...dr.map(Math.abs))/5)*5);
+ const Yb=D.el?(v=>pT+(0-Math.max(-mx,Math.min(0,v)))/mx*phb):(v=>pT+(mx-v)/(2*mx)*phb),bwid=pwb/cf.length;
+ gb.font='10px system-ui,sans-serif';gb.strokeStyle=line;gb.fillStyle=muted;gb.lineWidth=1;
+ for(let v=-mx;v<=(D.el?0:mx);v+=5){gb.beginPath();gb.moveTo(pL,Yb(v));gb.lineTo(pL+pwb,Yb(v));gb.stroke();if(v%10===0){gb.textAlign='right';gb.fillText((v>0?'+':'')+String(v).replace('-','−'),pL-5,Yb(v)+3)}}
+ gb.strokeStyle=muted;gb.beginPath();gb.moveTo(pL,Yb(0));gb.lineTo(pL+pwb,Yb(0));gb.stroke();
+ if(D.el){gb.strokeStyle=warn;gb.setLineDash([5,4]);gb.beginPath();gb.moveTo(pL,Yb(-3));gb.lineTo(pL+pwb,Yb(-3));gb.stroke();gb.setLineDash([]);gb.fillStyle=warn;gb.textAlign='right';gb.fillText('−3 dB',pL+pwb-2,Yb(-3)-3)}
+ cf.forEach((c,i)=>{const v=dr[i],x0=pL+i*bwid+bwid*0.15,w=bwid*0.7,low=c<fLim;gb.fillStyle=D.el?(v>-3?css('--warn'):acc):(v>=0?acc:css('--warn'));gb.globalAlpha=low?0.35:0.9;gb.fillRect(x0,Math.min(Yb(0),Yb(v)),w,Math.abs(Yb(v)-Yb(0)));gb.globalAlpha=1;
+  if(i%2===0||cf.length<16){gb.fillStyle=muted;gb.textAlign='center';{const n=cfN[i];gb.fillText(n>=1000?String(n/1000).replace('.',',')+'k':String(n).replace('.',','),x0+w/2,pT+phb+12)}}});
+ gb.textAlign='left';gb.fillStyle=text;gb.font='11px system-ui,sans-serif';gb.fillText(D.el?'Myöhäinen − koko, dB (1/3 okt) – oranssi: jälkikaiunta hallitsee sävyä (yli −3 dB), sininen: varhainen ääni hallitsee':'D/R, dB (1/3 okt) – suora ääni hallitsee ylöspäin, huone alaspäin',pL+4,D.el?pT+phb-6:pT+10)}
+
+// ================= what-if snapshots =================
+let SNAPS=[],SNAPID=0;const SNAPC=['#f59e0b','#10b981','#ec4899','#8b5cf6'];
+const GEOK=['room','temp','loss','alpha','lp','mmmR','speakers','boxes','dx','dur','cutAuto','cutZ','cutX'];
+function geomOf(st){const o={};GEOK.forEach(k=>{if(st[k]!==undefined)o[k]=clone(st[k])});return o}
+function withSnap(sn,fn){const sR=RES,sS=S;S=Object.assign(clone(sS),geomOf(sn.st));if(S.src!=='all'&&+S.src>=S.speakers.length)S.src='0';RES=sn.res;try{return fn()}finally{RES=sR;S=sS}}
+function snapDiff(a,b){const out=[],fm=v=>f(v,2);
+ ['W','L','H'].forEach(k=>{if(Math.abs(a.room[k]-b.room[k])>1e-6)out.push(`huone ${k} ${fm(a.room[k])} → ${fm(b.room[k])} m`)});
+ ['x','y','z'].forEach(k=>{if(Math.abs(a.lp[k]-b.lp[k])>1e-6)out.push(`kuuntelupiste ${k} ${fm(a.lp[k])} → ${fm(b.lp[k])} m`)});
+ b.speakers.forEach((s,i)=>{const o=a.speakers[i];if(!o){out.push(`${s.name} lisätty`);return}['x','y','z'].forEach(k=>{if(Math.abs(o[k]-s[k])>1e-6)out.push(`${s.name} ${k} ${fm(o[k])} → ${fm(s[k])} m`)})});
+ a.speakers.slice(b.speakers.length).forEach(s=>out.push(`${s.name} poistettu`));
+ Object.keys(b.alpha).forEach(k=>{if(Math.abs(a.alpha[k]-b.alpha[k])>1e-6)out.push(`α ${k} ${fm(a.alpha[k])} → ${fm(b.alpha[k])}`)});
+ const nm=x=>x.name||'laatikko';
+ b.boxes.forEach((x,i)=>{const o=a.boxes[i];if(!o){out.push(`${nm(x)} lisätty`);return}
+  if(o.on!==x.on)out.push(`${nm(x)} ${x.on?'otettu käyttöön':'poistettu käytöstä'}`);
+  else if(['x0','x1','y0','y1','z0','z1'].some(k=>Math.abs(o[k]-x[k])>1e-6))out.push(`${nm(x)} siirretty tai mitoitettu`);
+  if((o.type||'')!==(x.type||''))out.push(`${nm(x)} tyyppi vaihdettu`);else if(x.type==='por'?Math.abs((o.sig||0)-(x.sig||0))>1e-6:Math.abs((o.a||0)-(x.a||0))>1e-6)out.push(`${nm(x)} ${x.type==='por'?'σ':'α'} muutettu`)});
+ a.boxes.slice(b.boxes.length).forEach(x=>out.push(`${nm(x)} poistettu`));
+ ['temp','loss','dx','dur','mmmR'].forEach(k=>{if(a[k]!==b[k])out.push(`${k} ${a[k]} → ${b[k]}`)});
+ return out}
+function renderSnaps(){const box=document.getElementById('snapList');if(!box)return;const cur=geomOf(S);
+ box.innerHTML=SNAPS.map(sn=>{const d=snapDiff(sn.st,cur);return`<div class="snapitem" data-id="${sn.id}"><div class="hd"><span class="sw" style="background:${sn.col}"></span><b>${esc(sn.name)}</b>
+  <label class="check"><input type="checkbox" data-on${sn.on?' checked':''}> näytä</label><button data-restore>Palauta tämä asetelma</button><button data-del>Poista</button></div>
+  <div class="diff">${d.length?'Nykyinen tilanne verrattuna tähän: '+esc(d.slice(0,8).join(' · '))+(d.length>8?` · (+${d.length-8} muuta)`:''):'Sama asetelma kuin nykyinen.'}</div></div>`}).join('');
+ box.querySelectorAll('.snapitem').forEach(el=>{const sn=SNAPS.find(x=>x.id===+el.dataset.id);
+  el.querySelector('[data-on]').onchange=e=>{sn.on=e.target.checked;drawResults()};
+  el.querySelector('[data-del]').onclick=()=>{SNAPS=SNAPS.filter(x=>x!==sn);renderSnaps();drawResults()};
+  el.querySelector('[data-restore]').onclick=()=>{Object.assign(S,geomOf(sn.st));RES=sn.res;SEL=-1;bindStatic();renderSpk();renderBoxes();update();
+   setStatus('Palautettu vertailukohta: '+esc(sn.name)+'.')}});
+ const st=document.getElementById('snapStat');if(st&&!st.dataset.keep)st.textContent=SNAPS.length?'':'Ei vertailukohtia.'}
+function addSnap(){const st=document.getElementById('snapStat');st.dataset.keep='';
+ if(!RES||RES.key!==SIMKEYS()){st.textContent='Laske simulaatio ensin nykyisillä asetuksilla.';st.dataset.keep='1';return}
+ if(SNAPS.length>=4){st.textContent='Enintään 4 vertailukohtaa – poista jokin ensin.';st.dataset.keep='1';return}
+ const inp=document.getElementById('snapName'),used=SNAPS.map(x=>x.col),col=SNAPC.find(c=>!used.includes(c))||SNAPC[0];
+ SNAPS.push({id:++SNAPID,name:(inp.value||'').trim()||('Vertailu '+SNAPID),st:geomOf(S),res:RES,col,on:true});inp.value='';renderSnaps();drawResults()}
+
+
+// ================= tabs & buttons =================
+function showTab(t){if(!document.querySelector('#tabs [data-t="'+t+'"]'))t='geo';S.tab=t;save();
+ document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+ document.querySelectorAll('main>[data-tab]').forEach(el=>el.classList.toggle('tab-on',el.dataset.tab===t));
+ document.getElementById('main').classList.toggle('wide',t!=='geo');update()}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.t));
+document.getElementById('runBtn').onclick=()=>runSim();
+document.getElementById('snapAdd').onclick=()=>addSnap();
+document.getElementById('addSpk').onclick=()=>{S.speakers.push({name:'Kaiutin '+(S.speakers.length+1),x:S.room.W/2,y:0.4,z:1.0});renderSpk();update()};
+document.getElementById('addNotch').onclick=()=>{SEL=S.boxes.length;S.boxes.push({on:true,name:'L-lovi',x0:0,x1:1.0,y0:Math.round((S.room.L-1)*100)/100,y1:S.room.L,z0:0,z1:S.room.H,a:0.05});renderBoxes();update()};
+document.getElementById('addPor').onclick=()=>{SEL=S.boxes.length;S.boxes.push({on:true,type:'por',name:'Vaimennin',x0:0,x1:0.3,y0:0,y1:0.3,z0:0,z1:Math.min(S.room.H,1.2),a:0.3,sig:10});renderBoxes();update()};
+document.getElementById('addBox').onclick=()=>{SEL=S.boxes.length;S.boxes.push({on:true,name:'Kaluste',x0:0,x1:0.6,y0:Math.round((S.room.L-0.6)*100)/100,y1:S.room.L,z0:0,z1:1.0,a:0.3});renderBoxes();update()};
+const sl=document.getElementById('mapSlider');sl.oninput=()=>{const fb=RES?RES.G.fRel:300;S.mapF=Math.round(15*Math.pow(fb/15,sl.value/1000)*2)/2;drawMap()};
+document.getElementById('mapFIn').onchange=e=>{const n=num(e.target.value);if(n)S.mapF=n;drawMap()};
+document.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{S.mapF=Math.round((S.mapF||83)+ +b.dataset.step);drawMap()});
+function download(name,text,type){const b=new Blob([text],{type});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+document.getElementById('expJson').onclick=()=>download('huonestimulaattori-3002-asetukset.json',JSON.stringify(S,null,2),'application/json');
+document.getElementById('impBtn').onclick=()=>document.getElementById('impJson').click();
+document.getElementById('impJson').onchange=e=>{const fl=e.target.files[0];if(!fl)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);
+  if(o.alphaLF&&!o.boxes){ // settings file from Huonestimulaattori 3001
+   ['room','temp','lp','speakers'].forEach(k=>{if(o[k]!==undefined)S[k]=o[k]});S.alpha=Object.assign({},S.alpha,o.alphaLF);S.speakers=S.speakers.map(s=>({name:s.name,x:s.x,y:s.y,z:s.z}))}
+  else S=Object.assign(clone(DEF),o);
+  RES=null;init()}catch(err){alert('Tiedostoa ei voitu lukea.')}};rd.readAsText(fl);e.target.value=''};
+document.getElementById('reset').onclick=()=>{if(confirm('Palautetaanko oletusasetukset?')){S=clone(DEF);RES=null;init()}};
+(function(){const d=document.getElementById('drop'),inp=document.getElementById('wavIn');document.getElementById('wavBtn').onclick=()=>inp.click();
+ inp.onchange=()=>{if(inp.files[0])loadWav(inp.files[0]);inp.value=''};
+ ['dragenter','dragover'].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.add('over')}));
+ ['dragleave','drop'].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.remove('over')}));
+ d.addEventListener('drop',e=>{const fl=e.dataTransfer.files[0];if(fl)loadWav(fl)})})();
+let rzT=null;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(update,150)});
+function init(){bindStatic();renderSpk();renderBoxes();renderFitParams();renderFitRes();showTab(S.tab||'geo')}
+init();
+</script>
+</body>
+</html>
